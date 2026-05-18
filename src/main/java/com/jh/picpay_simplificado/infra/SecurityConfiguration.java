@@ -40,7 +40,7 @@ public class SecurityConfiguration {
 	public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 		return httpSecurity
 				.authorizeHttpRequests(authorize -> authorize
-															 .anyRequest().authenticated()
+															 .anyRequest().permitAll()
 															 )
 															 
 				.csrf(csrf -> csrf.disable())

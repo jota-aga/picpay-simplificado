@@ -5,10 +5,12 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
 
 import com.jh.picpay_simplificado.entity.Role;
 import com.jh.picpay_simplificado.repository.RoleRepository;
 
+@Component
 public class CommandLine implements CommandLineRunner{
 	
 	@Autowired
