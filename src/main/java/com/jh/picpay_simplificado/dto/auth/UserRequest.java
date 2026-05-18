@@ -1,4 +1,4 @@
-package com.jh.picpay_simplificado.dto.user;
+package com.jh.picpay_simplificado.dto.auth;
 
 import org.hibernate.validator.constraints.br.CNPJ;
 import org.hibernate.validator.constraints.br.CPF;

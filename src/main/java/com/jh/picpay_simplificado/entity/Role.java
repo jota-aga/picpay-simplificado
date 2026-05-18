@@ -20,7 +20,7 @@ public class Role {
 	@GeneratedValue
 	private Long id;
 	
-	private String name;
+	private String nome;
 	
 	public enum Value{
 		USUARIO,

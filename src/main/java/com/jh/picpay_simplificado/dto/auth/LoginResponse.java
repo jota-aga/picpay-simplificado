@@ -1,4 +1,4 @@
-package com.jh.picpay_simplificado.auth.dto;
+package com.jh.picpay_simplificado.dto.auth;
 
 public record LoginResponse(String token) {
 
