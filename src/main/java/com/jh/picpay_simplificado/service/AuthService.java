@@ -9,6 +9,8 @@ import com.jh.picpay_simplificado.dto.auth.LoginResponse;
 import com.jh.picpay_simplificado.dto.auth.UserRequest;
 import com.jh.picpay_simplificado.entity.Role;
 import com.jh.picpay_simplificado.entity.User;
+import com.jh.picpay_simplificado.exceptions.NotAuthorizedException;
+import com.jh.picpay_simplificado.exceptions.NotFoundException;
 import com.jh.picpay_simplificado.repository.RoleRepository;
 import com.jh.picpay_simplificado.repository.UserRepository;
 
@@ -58,15 +60,15 @@ public class AuthService {
 	}
 	
 	private void isLoginCorrect(User user, String senha) {
-		if(!encoder.matches(senha, user.getSenha())) throw new RuntimeException();
+		if(!encoder.matches(senha, user.getSenha())) throw new NotAuthorizedException("Login ou senha não estão corretos");
 	}
 	
 	private User findUserByEmail(LoginRequest login) {
-		return userRepository.findByEmail(login.email()).orElseThrow(() -> new RuntimeException());
+		return userRepository.findByEmail(login.email()).orElseThrow(() -> new NotAuthorizedException("Login ou senha não estão corretos"));
 	}
 	
 	private Role findRoleByNome(String nome) {
 		return roleRepository.findByNome(nome)
-				.orElseThrow(() -> new RuntimeException());
+				.orElseThrow(() -> new NotFoundException("nome de role"));
 	}
 }
