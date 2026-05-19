@@ -21,8 +21,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.jh.picpay_simplificado.dto.auth.LoginRequest;
 import com.jh.picpay_simplificado.dto.auth.UserRequest;
+import com.jh.picpay_simplificado.entity.Lojista;
 import com.jh.picpay_simplificado.entity.Role;
 import com.jh.picpay_simplificado.entity.User;
+import com.jh.picpay_simplificado.exceptions.ConflictException;
 import com.jh.picpay_simplificado.exceptions.NotAuthorizedException;
 import com.jh.picpay_simplificado.exceptions.NotFoundException;
 import com.jh.picpay_simplificado.repository.CompradorRepository;
@@ -102,8 +104,10 @@ public class AuthServiceUnitTest {
 				Role.Value.COMPRADOR.name());
 		role.setNome(Role.Value.COMPRADOR.name());
 		
+		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.empty());
 		when(passwordEncoder.encode(userRequest.senha())).thenReturn("senha");
 		when(roleRepository.findByNome(userRequest.role())).thenReturn(Optional.of(role));
+		when(compradorRepository.findByCPF(userRequest.cpf())).thenReturn(Optional.empty());
 		
 		authService.saveUser(userRequest);
 		
@@ -116,6 +120,8 @@ public class AuthServiceUnitTest {
 				Role.Value.COMPRADOR.name());
 		role.setNome(Role.Value.COMPRADOR.name());
 		
+		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.empty());
+
 		when(passwordEncoder.encode(userRequest.senha())).thenReturn("senha");
 		when(roleRepository.findByNome(userRequest.role())).thenReturn(Optional.empty());
 		
@@ -125,13 +131,28 @@ public class AuthServiceUnitTest {
 	}
 	
 	@Test
+	public void saveUserComprador_WhenEmailIsRepeated() {
+		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
+				Role.Value.COMPRADOR.name());
+		role.setNome(Role.Value.COMPRADOR.name());
+		
+		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.of(new User()));
+		
+		assertThrows(ConflictException.class, () -> authService.saveUser(userRequest));
+		
+		verify(lojistaRepository, never()).save(any());
+	}
+	
+	@Test
 	public void saveUserLojistaSucess() {
 		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
 				Role.Value.LOJISTA.name());
 		role.setNome(Role.Value.LOJISTA.name());
 		
+		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.empty());
 		when(passwordEncoder.encode(userRequest.senha())).thenReturn("senha");
 		when(roleRepository.findByNome(userRequest.role())).thenReturn(Optional.of(role));
+		when(lojistaRepository.findByCNPJ(userRequest.cnpj())).thenReturn(Optional.empty());
 		
 		authService.saveUser(userRequest);
 		
@@ -141,13 +162,43 @@ public class AuthServiceUnitTest {
 	@Test
 	public void saveUserLojista_WhenRoleNotFound() {
 		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
-				Role.Value.COMPRADOR.name());
-		role.setNome(Role.Value.COMPRADOR.name());
+				Role.Value.LOJISTA.name());
+		role.setNome(Role.Value.LOJISTA.name());
 		
+		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.empty());
 		when(passwordEncoder.encode(userRequest.senha())).thenReturn("senha");
 		when(roleRepository.findByNome(userRequest.role())).thenReturn(Optional.empty());
 		
 		assertThrows(NotFoundException.class, () -> authService.saveUser(userRequest));
+		
+		verify(lojistaRepository, never()).save(any());
+	}
+	
+	@Test
+	public void saveUserLojista_WhenEmailIsRepeated() {
+		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
+				Role.Value.LOJISTA.name());
+		role.setNome(Role.Value.LOJISTA.name());
+		
+		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.of(new User()));
+		
+		assertThrows(ConflictException.class, () -> authService.saveUser(userRequest));
+		
+		verify(lojistaRepository, never()).save(any());
+	}
+	
+	@Test
+	public void saveUserLojista_WhenCNPJIsRepeated() {
+		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
+				Role.Value.LOJISTA.name());
+		role.setNome(Role.Value.LOJISTA.name());
+		
+		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.empty());
+		when(passwordEncoder.encode(userRequest.senha())).thenReturn("senha");
+		when(roleRepository.findByNome(userRequest.role())).thenReturn(Optional.of(role));
+		when(lojistaRepository.findByCNPJ(userRequest.cnpj())).thenReturn(Optional.of(new Lojista()));
+	
+		assertThrows(ConflictException.class, () -> authService.saveUser(userRequest));
 		
 		verify(lojistaRepository, never()).save(any());
 	}

@@ -17,6 +17,7 @@ import com.jh.picpay_simplificado.entity.Comprador;
 import com.jh.picpay_simplificado.entity.Lojista;
 import com.jh.picpay_simplificado.entity.Role;
 import com.jh.picpay_simplificado.entity.User;
+import com.jh.picpay_simplificado.exceptions.ConflictException;
 import com.jh.picpay_simplificado.exceptions.NotAuthorizedException;
 import com.jh.picpay_simplificado.exceptions.NotFoundException;
 import com.jh.picpay_simplificado.repository.CompradorRepository;
@@ -80,6 +81,21 @@ public class AuthServiceIntegrationTest {
 	}
 	
 	@Test
+	public void saveUserComprador_WhenCPFIsRepeated() {
+		UserRequest userCPFRepetido = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao123@email.com", "senha123",
+				Role.Value.COMPRADOR.name());
+		
+		authService.saveUser(userComprador);
+		assertThrows(ConflictException.class, ()->authService.saveUser(userCPFRepetido));
+		
+		List<Comprador> compradores = compradorRepository.findAll();
+		List<User> users = userRepository.findAll();
+		
+		assertEquals(1, compradores.size());
+		assertEquals(1, users.size());
+	}
+	
+	@Test
 	public void saveUserComprador_WhenRoleNotFound() {
 		userComprador = new UserRequest("João Henrique", "12345678978", "12345678000195", "joao@email.com", "senha123",
 				"testes");
@@ -127,6 +143,21 @@ public class AuthServiceIntegrationTest {
 		
 		assertEquals(0, lojistas.size());
 		assertEquals(0, users.size());
+	}
+	
+	@Test
+	public void saveUserLojista_WhenCNPJIsRepeated() {
+		UserRequest userCNPJRepetido = new UserRequest("João Henrique", "12345678978", userLojista.cnpj(), "joao123@email.com", "senha123",
+				Role.Value.LOJISTA.name());
+		authService.saveUser(userLojista);
+		
+		assertThrows(ConflictException.class, () -> authService.saveUser(userCNPJRepetido));
+		
+		List<Lojista> lojistas = lojistaRepository.findAll();
+		List<User> users = userRepository.findAll();
+		
+		assertEquals(1, lojistas.size());
+		assertEquals(1, users.size());
 	}
 	
 	@Test

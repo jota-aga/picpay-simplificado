@@ -75,7 +75,7 @@ public class AuthService {
 	}
 	
 	private Comprador createComprador(UserRequest userRequest, User user) {
-		if(userRequest.cpf() == null || userRequest.cpf().isBlank()) throw new ConflictException("CPF é obrigatório");
+		validateCPFComprador(userRequest.cpf());
 		
 		return Comprador.builder()
 		.balanco(new BigDecimal(0))
@@ -85,7 +85,7 @@ public class AuthService {
 	}
 	
 	private Lojista createLojista(UserRequest userRequest, User user) {
-		if(userRequest.cnpj() == null || userRequest.cnpj().isBlank()) throw new ConflictException("CNPJ é obrigatório");
+		validateCNPJLojista(userRequest.cnpj());
 		
 		return Lojista.builder()
 				.balanco(new BigDecimal(0))
@@ -109,12 +109,28 @@ public class AuthService {
 	
 	private Role findRoleByNome(String nome) {
 		return roleRepository.findByNome(nome)
-				.orElseThrow(() -> new NotFoundException("nome de role"));
+				.orElseThrow(() -> new NotFoundException("Nome da Role"));
 	}
 	
 	private void validateUserEmail(String email) {
 		Optional<User> optionalUser = userRepository.findByEmail(email);
 		
-		if(optionalUser.isPresent()) throw new ConflictException("Email já existe");
+		if(optionalUser.isPresent()) throw new ConflictException("Email já cadastrado");
+	}
+	
+	private void validateCPFComprador(String CPF) {
+		if(CPF == null || CPF.isBlank()) throw new ConflictException("CPF é obrigatório");
+		
+		Optional<Comprador> optionalComprador = compradorRepository.findByCPF(CPF);
+		
+		if(optionalComprador.isPresent()) throw new ConflictException("CPF já cadastrado");
+	}
+	
+	private void validateCNPJLojista(String CNPJ) {
+		if(CNPJ == null || CNPJ.isBlank()) throw new ConflictException("CNPJ é obrigatório");
+		
+		Optional<Lojista> optionalLojista = lojistaRepository.findByCNPJ(CNPJ);
+		
+		if(optionalLojista.isPresent()) throw new ConflictException("CNPJ já cadastrado");
 	}
 }
