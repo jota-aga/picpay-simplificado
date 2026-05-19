@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.jh.picpay_simplificado.dto.auth.LoginRequest;
 import com.jh.picpay_simplificado.dto.auth.LoginResponse;
@@ -20,7 +21,6 @@ import com.jh.picpay_simplificado.repository.LojistaRepository;
 import com.jh.picpay_simplificado.repository.RoleRepository;
 import com.jh.picpay_simplificado.repository.UserRepository;
 
-import jakarta.transaction.Transactional;
 
 @Service
 public class AuthService {
@@ -47,7 +47,7 @@ public class AuthService {
 	public void saveUser(UserRequest userRequest) {
 		User user = createUser(userRequest);
 		
-		if(user.getRole().getNome() == Role.Value.COMPRADOR.name()) {
+		if(user.getRole().getNome().equals(Role.Value.COMPRADOR.name())) {
 			Comprador comprador = Comprador.builder()
 					.balanco(new BigDecimal(0))
 					.CPF(userRequest.cpf())
@@ -56,10 +56,10 @@ public class AuthService {
 			
 			compradorRepository.save(comprador);
 		}
-		else {
+		else if(user.getRole().getNome().equals(Role.Value.LOJISTA.name())) {
 			Lojista lojista = Lojista.builder()
 					.balanco(new BigDecimal(0))
-					.CNPJ(userRequest.cpf())
+					.CNPJ(userRequest.cnpj())
 					.user(user)
 					.build();
 			
