@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jh.picpay_simplificado.dto.auth.LoginRequest;
-import com.jh.picpay_simplificado.dto.auth.LoginResponse;
 import com.jh.picpay_simplificado.dto.auth.UserRequest;
 import com.jh.picpay_simplificado.entity.Comprador;
 import com.jh.picpay_simplificado.entity.Lojista;

@@ -7,7 +7,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +21,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.jh.picpay_simplificado.dto.auth.LoginRequest;
 import com.jh.picpay_simplificado.dto.auth.UserRequest;
-import com.jh.picpay_simplificado.entity.Comprador;
 import com.jh.picpay_simplificado.entity.Role;
 import com.jh.picpay_simplificado.entity.User;
 import com.jh.picpay_simplificado.exceptions.NotAuthorizedException;
