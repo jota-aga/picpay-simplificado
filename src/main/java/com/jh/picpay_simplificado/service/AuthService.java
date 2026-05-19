@@ -1,5 +1,7 @@
 package com.jh.picpay_simplificado.service;
 
+import java.math.BigDecimal;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -7,10 +9,14 @@ import org.springframework.stereotype.Service;
 import com.jh.picpay_simplificado.dto.auth.LoginRequest;
 import com.jh.picpay_simplificado.dto.auth.LoginResponse;
 import com.jh.picpay_simplificado.dto.auth.UserRequest;
+import com.jh.picpay_simplificado.entity.Comprador;
+import com.jh.picpay_simplificado.entity.Lojista;
 import com.jh.picpay_simplificado.entity.Role;
 import com.jh.picpay_simplificado.entity.User;
 import com.jh.picpay_simplificado.exceptions.NotAuthorizedException;
 import com.jh.picpay_simplificado.exceptions.NotFoundException;
+import com.jh.picpay_simplificado.repository.CompradorRepository;
+import com.jh.picpay_simplificado.repository.LojistaRepository;
 import com.jh.picpay_simplificado.repository.RoleRepository;
 import com.jh.picpay_simplificado.repository.UserRepository;
 
@@ -26,18 +32,41 @@ public class AuthService {
 	private RoleRepository roleRepository;
 	
 	@Autowired
+	private CompradorRepository compradorRepository;
+	
+	@Autowired
+	private LojistaRepository lojistaRepository;
+	
+	@Autowired
 	private TokenService tokenService;
 	
 	@Autowired
 	private BCryptPasswordEncoder encoder;
 	
+	@Transactional
 	public void saveUser(UserRequest userRequest) {
 		User user = createUser(userRequest);
 		
-		userRepository.save(user);
+		if(user.getRole().getNome() == Role.Value.COMPRADOR.name()) {
+			Comprador comprador = Comprador.builder()
+					.balanco(new BigDecimal(0))
+					.CPF(userRequest.cpf())
+					.user(user)
+					.build();
+			
+			compradorRepository.save(comprador);
+		}
+		else {
+			Lojista lojista = Lojista.builder()
+					.balanco(new BigDecimal(0))
+					.CNPJ(userRequest.cpf())
+					.user(user)
+					.build();
+			
+			lojistaRepository.save(lojista);
+		}		
 	}
 	
-	@Transactional
 	private User createUser(UserRequest userRequest) {
 		String encryptedPassword = encoder.encode(userRequest.senha());
 		

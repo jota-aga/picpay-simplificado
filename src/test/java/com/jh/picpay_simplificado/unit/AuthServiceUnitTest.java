@@ -1,8 +1,13 @@
 package com.jh.picpay_simplificado.unit;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -16,9 +21,14 @@ import org.mockito.quality.Strictness;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.jh.picpay_simplificado.dto.auth.LoginRequest;
+import com.jh.picpay_simplificado.dto.auth.UserRequest;
+import com.jh.picpay_simplificado.entity.Comprador;
 import com.jh.picpay_simplificado.entity.Role;
 import com.jh.picpay_simplificado.entity.User;
 import com.jh.picpay_simplificado.exceptions.NotAuthorizedException;
+import com.jh.picpay_simplificado.exceptions.NotFoundException;
+import com.jh.picpay_simplificado.repository.CompradorRepository;
+import com.jh.picpay_simplificado.repository.LojistaRepository;
 import com.jh.picpay_simplificado.repository.RoleRepository;
 import com.jh.picpay_simplificado.repository.UserRepository;
 import com.jh.picpay_simplificado.service.AuthService;
@@ -38,6 +48,12 @@ public class AuthServiceUnitTest {
 	private RoleRepository roleRepository;
 	
 	@Mock
+	private CompradorRepository compradorRepository;
+	
+	@Mock
+	private LojistaRepository lojistaRepository;
+	
+	@Mock
 	private TokenService tokenService;
 	
 	@Mock
@@ -45,11 +61,15 @@ public class AuthServiceUnitTest {
 	
 	private LoginRequest loginRequest;
 	
+	private UserRequest userRequest;
+	
 	private User user;
+	
+	private Role role;
 	
 	@BeforeEach
 	public void setUp() {
-		Role role = new Role(1L, "role");
+		role = new Role(1L, "role");
 		loginRequest = new LoginRequest("email", "senha");
 		user = new User(1L, "nome", "email", "senha", role);
 	}
@@ -76,5 +96,61 @@ public class AuthServiceUnitTest {
 		when(passwordEncoder.matches(loginRequest.senha(), user.getSenha())).thenReturn(false);
 		
 		assertThrows(NotAuthorizedException.class, () -> authService.doLogin(loginRequest));
+	}
+	
+	@Test
+	public void saveUserCompradorSucess() {
+		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
+				Role.Value.COMPRADOR.name());
+		role.setNome(Role.Value.COMPRADOR.name());
+		
+		when(passwordEncoder.encode(userRequest.senha())).thenReturn("senha");
+		when(roleRepository.findByNome(userRequest.role())).thenReturn(Optional.of(role));
+		
+		authService.saveUser(userRequest);
+		
+		verify(compradorRepository, atLeastOnce()).save(any());
+	}
+	
+	@Test
+	public void saveUserComprador_WhenRoleNotFound() {
+		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
+				Role.Value.COMPRADOR.name());
+		role.setNome(Role.Value.COMPRADOR.name());
+		
+		when(passwordEncoder.encode(userRequest.senha())).thenReturn("senha");
+		when(roleRepository.findByNome(userRequest.role())).thenReturn(Optional.empty());
+		
+		assertThrows(NotFoundException.class, () -> authService.saveUser(userRequest));
+		
+		verify(compradorRepository, never()).save(any());
+	}
+	
+	@Test
+	public void saveUserLojistaSucess() {
+		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
+				Role.Value.LOJISTA.name());
+		role.setNome(Role.Value.LOJISTA.name());
+		
+		when(passwordEncoder.encode(userRequest.senha())).thenReturn("senha");
+		when(roleRepository.findByNome(userRequest.role())).thenReturn(Optional.of(role));
+		
+		authService.saveUser(userRequest);
+		
+		verify(lojistaRepository, atLeastOnce()).save(any());
+	}
+	
+	@Test
+	public void saveUserLojista_WhenRoleNotFound() {
+		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
+				Role.Value.COMPRADOR.name());
+		role.setNome(Role.Value.COMPRADOR.name());
+		
+		when(passwordEncoder.encode(userRequest.senha())).thenReturn("senha");
+		when(roleRepository.findByNome(userRequest.role())).thenReturn(Optional.empty());
+		
+		assertThrows(NotFoundException.class, () -> authService.saveUser(userRequest));
+		
+		verify(lojistaRepository, never()).save(any());
 	}
 }

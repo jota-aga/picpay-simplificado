@@ -22,7 +22,7 @@ public class InicializarRoles implements CommandLineRunner{
 		
 		if(optionalRole.isEmpty()) {
 			Role roleUsuario = Role.builder()
-					.nome(Role.Value.USUARIO.name())
+					.nome(Role.Value.COMPRADOR.name())
 					.build();
 			
 			Role roleLojista = Role.builder()

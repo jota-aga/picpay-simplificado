@@ -23,7 +23,7 @@ public class Role {
 	private String nome;
 	
 	public enum Value{
-		USUARIO,
+		COMPRADOR,
 		LOJISTA;
 	}
 }
