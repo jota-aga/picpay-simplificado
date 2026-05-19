@@ -31,6 +31,8 @@ public class AuthController {
 	@PostMapping("/login")
 	@ResponseStatus(code = HttpStatus.ACCEPTED)
 	public LoginResponse login(@RequestBody LoginRequest loginRequest) {
-		return authService.doLogin(loginRequest);
+		String token = authService.doLogin(loginRequest);
+		
+		return new LoginResponse(token);		
 	}
 }

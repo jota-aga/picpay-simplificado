@@ -80,12 +80,12 @@ public class AuthService {
 				.build();
 	}
 	
-	public LoginResponse doLogin(LoginRequest login) {
+	public String doLogin(LoginRequest login) {
 		User user = findUserByEmail(login);
 		
 		isLoginCorrect(user, login.senha());
 		String token = tokenService.generateToken(user);
-		return new LoginResponse(token);
+		return token;
 	}
 	
 	private void isLoginCorrect(User user, String senha) {

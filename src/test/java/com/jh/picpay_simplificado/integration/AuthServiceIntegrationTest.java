@@ -1,6 +1,7 @@
 package com.jh.picpay_simplificado.integration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
@@ -10,11 +11,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import com.jh.picpay_simplificado.dto.auth.LoginRequest;
 import com.jh.picpay_simplificado.dto.auth.UserRequest;
 import com.jh.picpay_simplificado.entity.Comprador;
 import com.jh.picpay_simplificado.entity.Lojista;
 import com.jh.picpay_simplificado.entity.Role;
 import com.jh.picpay_simplificado.entity.User;
+import com.jh.picpay_simplificado.exceptions.NotAuthorizedException;
 import com.jh.picpay_simplificado.exceptions.NotFoundException;
 import com.jh.picpay_simplificado.repository.CompradorRepository;
 import com.jh.picpay_simplificado.repository.LojistaRepository;
@@ -124,5 +127,45 @@ public class AuthServiceIntegrationTest {
 		
 		assertEquals(0, lojistas.size());
 		assertEquals(0, users.size());
+	}
+	
+	@Test
+	public void doLoginUserLojista() {
+		authService.saveUser(userLojista);
+		
+		LoginRequest login = new LoginRequest(userLojista.email(), userLojista.senha());
+		
+		String token = authService.doLogin(login);
+		
+		assertFalse(token.isBlank());
+	}
+	
+	@Test
+	public void doLoginLojista_whenEmailIsIncorrect() {
+		authService.saveUser(userLojista);
+		
+		LoginRequest login = new LoginRequest("email incorreto", userLojista.senha());
+		
+		assertThrows(NotAuthorizedException.class, () -> authService.doLogin(login));
+	}
+	
+	@Test
+	public void doLoginUserComprador() {
+		authService.saveUser(userComprador);
+		
+		LoginRequest login = new LoginRequest(userComprador.email(), userComprador.senha());
+		
+		String token = authService.doLogin(login);
+		
+		assertFalse(token.isBlank());
+	}
+	
+	@Test
+	public void doLoginComprador_whenEmailIsIncorrect() {
+		authService.saveUser(userComprador);
+		
+		LoginRequest login = new LoginRequest("email incorreto", userComprador.senha());
+		
+		assertThrows(NotAuthorizedException.class, () -> authService.doLogin(login));
 	}
 }
