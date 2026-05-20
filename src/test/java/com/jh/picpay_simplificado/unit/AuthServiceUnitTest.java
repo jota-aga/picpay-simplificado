@@ -62,7 +62,13 @@ public class AuthServiceUnitTest {
 	public void setUp() {
 		role = new Role(1L, "role");
 		loginRequest = new LoginRequest("email", "senha");
-		user = new User(1L, "nome", "documento", "email", "senha", role);
+		user = User.builder()
+				.nome("nome")
+				.email("email")
+				.documento("documento")
+				.senha("password")
+				.role(role)
+				.build();
 	}
 	
 	@Test

@@ -1,42 +1,30 @@
 package com.jh.picpay_simplificado.entity;
 
-import jakarta.persistence.CascadeType;
+import java.math.BigDecimal;
+
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Table(name = "user_table")
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Builder
-public class User {
+public class Carteira {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	private String nome;
+	private BigDecimal balanco;
 	
-	private String documento;
-	
-	private String email;
-	
-	private String senha;
-	
-	@ManyToOne
-	private Role role;
-	
-	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	private Carteira carteira;
+	@OneToOne
+	private User user;
 }

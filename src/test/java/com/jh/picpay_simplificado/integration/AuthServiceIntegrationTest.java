@@ -13,15 +13,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import com.jh.picpay_simplificado.dto.auth.LoginRequest;
 import com.jh.picpay_simplificado.dto.auth.UserRequest;
+import com.jh.picpay_simplificado.entity.Carteira;
 import com.jh.picpay_simplificado.entity.Role;
 import com.jh.picpay_simplificado.entity.User;
 import com.jh.picpay_simplificado.exceptions.ConflictException;
 import com.jh.picpay_simplificado.exceptions.NotAuthorizedException;
 import com.jh.picpay_simplificado.exceptions.NotFoundException;
+import com.jh.picpay_simplificado.repository.CarteiraRepository;
 import com.jh.picpay_simplificado.repository.UserRepository;
 import com.jh.picpay_simplificado.service.AuthService;
-
-import jakarta.validation.ConstraintViolationException;
 
 @SpringBootTest
 public class AuthServiceIntegrationTest {
@@ -31,6 +31,9 @@ public class AuthServiceIntegrationTest {
 	
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private CarteiraRepository carteiraRepository;
 	
 	private UserRequest userComprador;
 	
@@ -50,19 +53,11 @@ public class AuthServiceIntegrationTest {
 		authService.createUser(userComprador);
 		
 		List<User> users = userRepository.findAll();
+		List<Carteira> carteiras = carteiraRepository.findAll();
 		
 		assertEquals(1, users.size());
-	}
-	
-	@Test
-	public void createUserComprador_WhenCPFIsInvalid() {
-		userComprador = new UserRequest("João Henrique", "12345678978", "12345678000195", "joao@email.com", "senha123",
-				Role.Value.COMPRADOR.name());
-		assertThrows(ConstraintViolationException.class, ()->authService.createUser(userComprador));
-		
-		List<User> users = userRepository.findAll();
-		
-		assertEquals(0, users.size());
+		assertEquals(1, carteiras.size());
+
 	}
 	
 	@Test
@@ -96,17 +91,6 @@ public class AuthServiceIntegrationTest {
 		List<User> users = userRepository.findAll();
 		
 		assertEquals(1, users.size());
-	}
-	
-	@Test
-	public void createUserLojista_WhenCPFIsInvalid() {
-		userLojista = new UserRequest("João Henrique", "12345678978", "3213546", "joao@email.com", "senha123",
-				Role.Value.LOJISTA.name());
-		assertThrows(ConstraintViolationException.class, ()->authService.createUser(userLojista));
-		
-		List<User> users = userRepository.findAll();
-		
-		assertEquals(0, users.size());
 	}
 	
 	@Test

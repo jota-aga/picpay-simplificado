@@ -1,5 +1,6 @@
 package com.jh.picpay_simplificado.service;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.jh.picpay_simplificado.dto.auth.LoginRequest;
 import com.jh.picpay_simplificado.dto.auth.UserRequest;
+import com.jh.picpay_simplificado.entity.Carteira;
 import com.jh.picpay_simplificado.entity.Role;
 import com.jh.picpay_simplificado.entity.User;
 import com.jh.picpay_simplificado.exceptions.ConflictException;
@@ -35,14 +37,9 @@ public class AuthService {
 	
 	@Transactional
 	public void createUser(UserRequest userRequest) {
-		validateUserEmail(userRequest.email());
-		
-		if(userRequest.role().equals(Role.Value.COMPRADOR.name())) {
-			validateDocumento(userRequest.cpf());
-		}
-		else if(userRequest.role().equals(Role.Value.LOJISTA.name())) {
-			validateDocumento(userRequest.cnpj());
-		}
+		Carteira carteira = Carteira.builder()
+				.balanco(BigDecimal.ZERO)
+				.build();
 		
 		String encryptedPassword = encoder.encode(userRequest.senha());
 		
@@ -53,7 +50,19 @@ public class AuthService {
 				.email(userRequest.email())
 				.senha(encryptedPassword)
 				.role(role)
+				.carteira(carteira)
 				.build();
+		
+		validateUserEmail(userRequest.email());
+		
+		if(userRequest.role().equals(Role.Value.COMPRADOR.name())) {
+			validateDocumento(userRequest.cpf());
+			user.setDocumento(userRequest.cpf());
+		}
+		else if(userRequest.role().equals(Role.Value.LOJISTA.name())) {
+			validateDocumento(userRequest.cnpj());
+			user.setDocumento(userRequest.cnpj());
+		}
 		
 		userRepository.save(user);
 	}
