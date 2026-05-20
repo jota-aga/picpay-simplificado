@@ -13,15 +13,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import com.jh.picpay_simplificado.dto.auth.LoginRequest;
 import com.jh.picpay_simplificado.dto.auth.UserRequest;
-import com.jh.picpay_simplificado.entity.Comprador;
-import com.jh.picpay_simplificado.entity.Lojista;
 import com.jh.picpay_simplificado.entity.Role;
 import com.jh.picpay_simplificado.entity.User;
 import com.jh.picpay_simplificado.exceptions.ConflictException;
 import com.jh.picpay_simplificado.exceptions.NotAuthorizedException;
 import com.jh.picpay_simplificado.exceptions.NotFoundException;
-import com.jh.picpay_simplificado.repository.CompradorRepository;
-import com.jh.picpay_simplificado.repository.LojistaRepository;
 import com.jh.picpay_simplificado.repository.UserRepository;
 import com.jh.picpay_simplificado.service.AuthService;
 
@@ -36,12 +32,6 @@ public class AuthServiceIntegrationTest {
 	@Autowired
 	private UserRepository userRepository;
 	
-	@Autowired
-	private LojistaRepository lojistaRepository;
-	
-	@Autowired
-	private CompradorRepository compradorRepository;
-	
 	private UserRequest userComprador;
 	
 	private UserRequest userLojista;
@@ -52,117 +42,100 @@ public class AuthServiceIntegrationTest {
 				Role.Value.COMPRADOR.name());
 		userLojista = new UserRequest("João Henrique", "11237419484", "62420095000150", "joao@email.com", "senha123",
 				Role.Value.LOJISTA.name());
-		lojistaRepository.deleteAll();
-		compradorRepository.deleteAll();
+		userRepository.deleteAll();
 	}
 	
 	@Test
-	public void saveUserCompradorSucess() {
-		authService.saveUser(userComprador);
+	public void createUserCompradorSucess() {
+		authService.createUser(userComprador);
 		
-		List<Comprador> compradores = compradorRepository.findAll();
 		List<User> users = userRepository.findAll();
 		
-		assertEquals(1, compradores.size());
 		assertEquals(1, users.size());
 	}
 	
 	@Test
-	public void saveUserComprador_WhenCPFIsInvalid() {
+	public void createUserComprador_WhenCPFIsInvalid() {
 		userComprador = new UserRequest("João Henrique", "12345678978", "12345678000195", "joao@email.com", "senha123",
 				Role.Value.COMPRADOR.name());
-		assertThrows(ConstraintViolationException.class, ()->authService.saveUser(userComprador));
+		assertThrows(ConstraintViolationException.class, ()->authService.createUser(userComprador));
 		
-		List<Comprador> compradores = compradorRepository.findAll();
 		List<User> users = userRepository.findAll();
 		
-		assertEquals(0, compradores.size());
 		assertEquals(0, users.size());
 	}
 	
 	@Test
-	public void saveUserComprador_WhenCPFIsRepeated() {
+	public void createUserComprador_WhenCPFIsRepeated() {
 		UserRequest userCPFRepetido = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao123@email.com", "senha123",
 				Role.Value.COMPRADOR.name());
 		
-		authService.saveUser(userComprador);
-		assertThrows(ConflictException.class, ()->authService.saveUser(userCPFRepetido));
+		authService.createUser(userComprador);
+		assertThrows(ConflictException.class, ()->authService.createUser(userCPFRepetido));
 		
-		List<Comprador> compradores = compradorRepository.findAll();
 		List<User> users = userRepository.findAll();
 		
-		assertEquals(1, compradores.size());
 		assertEquals(1, users.size());
 	}
 	
 	@Test
-	public void saveUserComprador_WhenRoleNotFound() {
+	public void createUserComprador_WhenRoleNotFound() {
 		userComprador = new UserRequest("João Henrique", "12345678978", "12345678000195", "joao@email.com", "senha123",
 				"testes");
-		assertThrows(NotFoundException.class, ()->authService.saveUser(userComprador));
+		assertThrows(NotFoundException.class, ()->authService.createUser(userComprador));
 		
-		List<Comprador> compradores = compradorRepository.findAll();
 		List<User> users = userRepository.findAll();
 		
-		assertEquals(0, compradores.size());
 		assertEquals(0, users.size());
 	}
 	
 	@Test
-	public void saveUserLojistaSucess() {
-		authService.saveUser(userLojista);
+	public void createUserLojistaSucess() {
+		authService.createUser(userLojista);
 		
-		List<Lojista> lojistas = lojistaRepository.findAll();
 		List<User> users = userRepository.findAll();
 		
-		assertEquals(1, lojistas.size());
 		assertEquals(1, users.size());
 	}
 	
 	@Test
-	public void saveUserLojista_WhenCPFIsInvalid() {
+	public void createUserLojista_WhenCPFIsInvalid() {
 		userLojista = new UserRequest("João Henrique", "12345678978", "3213546", "joao@email.com", "senha123",
 				Role.Value.LOJISTA.name());
-		assertThrows(ConstraintViolationException.class, ()->authService.saveUser(userLojista));
+		assertThrows(ConstraintViolationException.class, ()->authService.createUser(userLojista));
 		
-		List<Lojista> lojistas = lojistaRepository.findAll();
 		List<User> users = userRepository.findAll();
 		
-		assertEquals(0, lojistas.size());
 		assertEquals(0, users.size());
 	}
 	
 	@Test
-	public void saveUserLojista_WhenRoleNotFound() {
+	public void createUserLojista_WhenRoleNotFound() {
 		userLojista = new UserRequest("João Henrique", "12345678978", "12345678000195", "joao@email.com", "senha123",
 				"testes");
-		assertThrows(NotFoundException.class, ()->authService.saveUser(userLojista));
+		assertThrows(NotFoundException.class, ()->authService.createUser(userLojista));
 		
-		List<Lojista> lojistas = lojistaRepository.findAll();
 		List<User> users = userRepository.findAll();
 		
-		assertEquals(0, lojistas.size());
 		assertEquals(0, users.size());
 	}
 	
 	@Test
-	public void saveUserLojista_WhenCNPJIsRepeated() {
+	public void createUserLojista_WhenCNPJIsRepeated() {
 		UserRequest userCNPJRepetido = new UserRequest("João Henrique", "12345678978", userLojista.cnpj(), "joao123@email.com", "senha123",
 				Role.Value.LOJISTA.name());
-		authService.saveUser(userLojista);
+		authService.createUser(userLojista);
 		
-		assertThrows(ConflictException.class, () -> authService.saveUser(userCNPJRepetido));
+		assertThrows(ConflictException.class, () -> authService.createUser(userCNPJRepetido));
 		
-		List<Lojista> lojistas = lojistaRepository.findAll();
 		List<User> users = userRepository.findAll();
 		
-		assertEquals(1, lojistas.size());
 		assertEquals(1, users.size());
 	}
 	
 	@Test
 	public void doLoginUserLojista() {
-		authService.saveUser(userLojista);
+		authService.createUser(userLojista);
 		
 		LoginRequest login = new LoginRequest(userLojista.email(), userLojista.senha());
 		
@@ -173,7 +146,7 @@ public class AuthServiceIntegrationTest {
 	
 	@Test
 	public void doLoginLojista_whenEmailIsIncorrect() {
-		authService.saveUser(userLojista);
+		authService.createUser(userLojista);
 		
 		LoginRequest login = new LoginRequest("email incorreto", userLojista.senha());
 		
@@ -182,7 +155,7 @@ public class AuthServiceIntegrationTest {
 	
 	@Test
 	public void doLoginUserComprador() {
-		authService.saveUser(userComprador);
+		authService.createUser(userComprador);
 		
 		LoginRequest login = new LoginRequest(userComprador.email(), userComprador.senha());
 		
@@ -193,7 +166,7 @@ public class AuthServiceIntegrationTest {
 	
 	@Test
 	public void doLoginComprador_whenEmailIsIncorrect() {
-		authService.saveUser(userComprador);
+		authService.createUser(userComprador);
 		
 		LoginRequest login = new LoginRequest("email incorreto", userComprador.senha());
 		

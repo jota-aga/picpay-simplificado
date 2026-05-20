@@ -25,7 +25,7 @@ public class AuthController {
 	@PostMapping("/register")
 	@ResponseStatus(code = HttpStatus.CREATED)
 	public void registrarUsuario(@Valid @RequestBody UserRequest userRequest) {
-		authService.saveUser(userRequest);
+		authService.createUser(userRequest);
 	}
 	
 	@PostMapping("/login")

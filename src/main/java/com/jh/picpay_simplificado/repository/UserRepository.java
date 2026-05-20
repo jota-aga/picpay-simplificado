@@ -8,4 +8,6 @@ import com.jh.picpay_simplificado.entity.User;
 
 public interface UserRepository extends JpaRepository<User, Long>{
 	Optional<User> findByEmail(String email);
+
+	Optional<User> findByDocumento(String CPF);
 }
