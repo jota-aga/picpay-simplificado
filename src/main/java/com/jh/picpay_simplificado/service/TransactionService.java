@@ -2,7 +2,6 @@ package com.jh.picpay_simplificado.service;
 
 import java.math.BigDecimal;
 
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +39,6 @@ public class TransactionService {
 			Lojista lojista = getLojistaByUser(user);
 			BigDecimal balancoFinal = lojista.getBalanco().add(valor);
 			lojista.setBalanco(balancoFinal);
-			System.out.println("-----------------ENTREI AQUI-----------------");
 		}
 	}
 	
