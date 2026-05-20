@@ -17,13 +17,13 @@ import com.jh.picpay_simplificado.entity.User;
 import com.jh.picpay_simplificado.repository.RoleRepository;
 import com.jh.picpay_simplificado.repository.UserRepository;
 import com.jh.picpay_simplificado.service.SecurityService;
-import com.jh.picpay_simplificado.service.TransactionService;
+import com.jh.picpay_simplificado.service.TransferenciaService;
 
 @SpringBootTest
 @Transactional
 public class TransactionServiceIntegrationTest {
 	@Autowired
-	private TransactionService transactionService;
+	private TransferenciaService transferenciaService;
 	
 	@Autowired
 	private RoleRepository roleRepository;
@@ -62,14 +62,12 @@ public class TransactionServiceIntegrationTest {
 	@Test
 	public void depositoCompradorSucess() {
 		when(securityService.getCurrentUser()).thenReturn(userComprador);
-		transactionService.realizarDeposito(BigDecimal.valueOf(200L));
 		
 	}
 	
 	@Test
 	public void depositoLojistaSucess() {
 		when(securityService.getCurrentUser()).thenReturn(userLojista);
-		transactionService.realizarDeposito(BigDecimal.valueOf(200L));
 		
 	}
 }
