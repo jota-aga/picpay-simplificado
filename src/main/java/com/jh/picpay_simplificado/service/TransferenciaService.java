@@ -6,9 +6,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
-import com.jh.picpay_simplificado.dto.authorization.AuthorizationResponse;
+import com.jh.picpay_simplificado.client.AuthorizationClient;
 import com.jh.picpay_simplificado.dto.transferencia.TransferenciaRequest;
 import com.jh.picpay_simplificado.entity.Carteira;
 import com.jh.picpay_simplificado.entity.Role;
@@ -29,13 +28,13 @@ public class TransferenciaService {
 	private SecurityService securityService;
 	
 	@Autowired
+	private AuthorizationClient authorizationClient;
+	
+	@Autowired
 	private UserRepository userRepository;
 	
 	@Autowired
 	private TransferenciaRepository transferenciaRepository;
-	
-	@Autowired
-	private WebClient webClient;
 		
 	@Transactional
 	public void transferencia(TransferenciaRequest transferenciaRequest) {
@@ -46,7 +45,7 @@ public class TransferenciaService {
 
 		validarTransferencia(pagador, transferenciaRequest.valor());
 		
-		if(autorizarTransferencia()) {
+		if(authorizationClient.autorizarTransferencia()) {
 			
 			realizarTransferencia(pagador, recebedor, valor);
 			
@@ -57,6 +56,7 @@ public class TransferenciaService {
 					.createdAt(LocalDateTime.now())
 					.status(StatusDaTransferencia.REALIZADA)
 					.build();
+			transferenciaRepository.save(transferencia);
 		}
 		else {
 			transferencia = Transferencia.builder()
@@ -66,18 +66,17 @@ public class TransferenciaService {
 					.createdAt(LocalDateTime.now())
 					.status(StatusDaTransferencia.NAO_AUTORIZADA)
 					.build();
+			transferenciaRepository.save(transferencia);
 			throw new NotAuthorizedException("Serviço autorizador externo não autorizou a transferência");
 		}
-		
-		transferenciaRepository.save(transferencia);
 	}
 	
 	private void realizarTransferencia(User pagador, User recebedor, BigDecimal valor) {
-		Carteira carteiraRecebedor = recebedor.getCarteira();
 		Carteira carteiraPagador = pagador.getCarteira();
+		Carteira carteiraRecebedor = recebedor.getCarteira();
 		
-		carteiraRecebedor.setBalanco(carteiraRecebedor.getBalanco().add(valor));
 		carteiraPagador.setBalanco(carteiraPagador.getBalanco().subtract(valor));
+		carteiraRecebedor.setBalanco(carteiraRecebedor.getBalanco().add(valor));
 		
 		userRepository.saveAll(List.of(pagador, recebedor));
 	}
@@ -98,16 +97,5 @@ public class TransferenciaService {
 	private User findUserById(Long id) {
 		return userRepository.findById(id)
 				.orElseThrow(() -> new NotFoundException("usuário por id"));
-	}
-	
-	private boolean autorizarTransferencia() {
-		AuthorizationResponse authorizationResponse = webClient.get()
-		.uri("https://util.devi.tools/api/v2/authorize")
-		.retrieve()
-		.bodyToMono(AuthorizationResponse.class)
-		.block();
-		
-		return authorizationResponse.data()
-				.authorization();
 	}
 }
