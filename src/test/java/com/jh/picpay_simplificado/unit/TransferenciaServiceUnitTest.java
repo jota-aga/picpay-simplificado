@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atMostOnce;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -82,7 +83,6 @@ public class TransferenciaServiceUnitTest {
 	public void transferenciaSucess() {
 		when(securityService.getCurrentUser()).thenReturn(userComprador);
 		when(userRepository.findById(userLojista.getId())).thenReturn(Optional.of(userLojista));
-		when(authorizationClient.autorizarTransferencia()).thenReturn(true);
 		
 		transferenciaService.transferencia(request);
 		
@@ -119,9 +119,9 @@ public class TransferenciaServiceUnitTest {
 	public void transferencia_WhenNaoAutorizado() {
 		when(securityService.getCurrentUser()).thenReturn(userComprador);
 		when(userRepository.findById(userLojista.getId())).thenReturn(Optional.of(userLojista));
-		when(authorizationClient.autorizarTransferencia()).thenReturn(false);
+		doThrow(NotAuthorizedException.class).when(authorizationClient).autorizarTransferencia();;
 		
-		assertThrows(NotAuthorizedException.class, () -> transferenciaService.transferencia(request));
+		transferenciaService.transferencia(request);
 		
 		verify(transferenciaRepository, atMostOnce()).save(any());
 		verify(userRepository, never()).save(any());

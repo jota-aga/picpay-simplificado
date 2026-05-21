@@ -45,30 +45,26 @@ public class TransferenciaService {
 
 		validarTransferencia(pagador, transferenciaRequest.valor());
 		
-		if(authorizationClient.autorizarTransferencia()) {
+		transferencia = Transferencia.builder()
+				.pagador(pagador)
+				.recebedor(recebedor)
+				.valor(valor)
+				.createdAt(LocalDateTime.now())
+				.build();
+		
+		try {
+			authorizationClient.autorizarTransferencia();
 			
 			realizarTransferencia(pagador, recebedor, valor);
 			
-			transferencia = Transferencia.builder()
-					.pagador(pagador)
-					.recebedor(recebedor)
-					.valor(valor)
-					.createdAt(LocalDateTime.now())
-					.status(StatusDaTransferencia.REALIZADA)
-					.build();
-			transferenciaRepository.save(transferencia);
+			transferencia.setStatus(StatusDaTransferencia.REALIZADA);
+			
+		}catch (NotAuthorizedException e) {
+			transferencia.setStatus(StatusDaTransferencia.NAO_AUTORIZADA);
 		}
-		else {
-			transferencia = Transferencia.builder()
-					.pagador(pagador)
-					.recebedor(recebedor)
-					.valor(valor)
-					.createdAt(LocalDateTime.now())
-					.status(StatusDaTransferencia.NAO_AUTORIZADA)
-					.build();
-			transferenciaRepository.save(transferencia);
-			throw new NotAuthorizedException("Serviço autorizador externo não autorizou a transferência");
-		}
+			
+		transferenciaRepository.save(transferencia);			
+		
 	}
 	
 	private void realizarTransferencia(User pagador, User recebedor, BigDecimal valor) {
