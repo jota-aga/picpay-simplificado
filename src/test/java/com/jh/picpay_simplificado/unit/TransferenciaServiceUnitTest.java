@@ -80,7 +80,7 @@ public class TransferenciaServiceUnitTest {
 	}
 	
 	@Test
-	public void transferenciaSucess() {
+	public void realizarTransferenciaSucess() {
 		when(securityService.getCurrentUser()).thenReturn(userComprador);
 		when(userRepository.findById(userLojista.getId())).thenReturn(Optional.of(userLojista));
 		
@@ -93,7 +93,7 @@ public class TransferenciaServiceUnitTest {
 	}
 	
 	@Test
-	public void transferencia_WhenPagadorIsLojista() {
+	public void realizarTransferencia_WhenPagadorIsLojista() {
 		when(securityService.getCurrentUser()).thenReturn(userLojista);
 		when(userRepository.findById(userLojista.getId())).thenReturn(Optional.of(userLojista));
 		
@@ -104,7 +104,7 @@ public class TransferenciaServiceUnitTest {
 	}
 	
 	@Test
-	public void transferencia_WhenBalancoInsuficiente() {
+	public void realizarTransferencia_WhenBalancoInsuficiente() {
 		when(securityService.getCurrentUser()).thenReturn(userComprador);
 		when(userRepository.findById(userLojista.getId())).thenReturn(Optional.of(userLojista));
 		carteiraComprador.setBalanco(BigDecimal.valueOf(99));
@@ -116,7 +116,7 @@ public class TransferenciaServiceUnitTest {
 	}
 	
 	@Test
-	public void transferencia_WhenNaoAutorizado() {
+	public void realizarTransferencia_WhenNaoAutorizado() {
 		when(securityService.getCurrentUser()).thenReturn(userComprador);
 		when(userRepository.findById(userLojista.getId())).thenReturn(Optional.of(userLojista));
 		doThrow(NotAuthorizedException.class).when(authorizationClient).autorizarTransferencia();;
