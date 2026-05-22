@@ -84,7 +84,7 @@ public class TransferenciaServiceUnitTest {
 		when(securityService.getCurrentUser()).thenReturn(userComprador);
 		when(userRepository.findById(userLojista.getId())).thenReturn(Optional.of(userLojista));
 		
-		transferenciaService.transferencia(request);
+		transferenciaService.realizarTransferencia(request);
 		
 		verify(transferenciaRepository, atMostOnce()).save(any());
 		verify(userRepository, atMostOnce()).save(any());
@@ -97,7 +97,7 @@ public class TransferenciaServiceUnitTest {
 		when(securityService.getCurrentUser()).thenReturn(userLojista);
 		when(userRepository.findById(userLojista.getId())).thenReturn(Optional.of(userLojista));
 		
-		assertThrows(NotAuthorizedException.class, () -> transferenciaService.transferencia(request));
+		assertThrows(NotAuthorizedException.class, () -> transferenciaService.realizarTransferencia(request));
 		
 		verify(transferenciaRepository, never()).save(any());
 		verify(userRepository, never()).save(any());
@@ -109,7 +109,7 @@ public class TransferenciaServiceUnitTest {
 		when(userRepository.findById(userLojista.getId())).thenReturn(Optional.of(userLojista));
 		carteiraComprador.setBalanco(BigDecimal.valueOf(99));
 		
-		assertThrows(ConflictException.class, () -> transferenciaService.transferencia(request));
+		assertThrows(ConflictException.class, () -> transferenciaService.realizarTransferencia(request));
 		
 		verify(transferenciaRepository, never()).save(any());
 		verify(userRepository, never()).save(any());
@@ -121,7 +121,7 @@ public class TransferenciaServiceUnitTest {
 		when(userRepository.findById(userLojista.getId())).thenReturn(Optional.of(userLojista));
 		doThrow(NotAuthorizedException.class).when(authorizationClient).autorizarTransferencia();;
 		
-		transferenciaService.transferencia(request);
+		transferenciaService.realizarTransferencia(request);
 		
 		verify(transferenciaRepository, atMostOnce()).save(any());
 		verify(userRepository, never()).save(any());

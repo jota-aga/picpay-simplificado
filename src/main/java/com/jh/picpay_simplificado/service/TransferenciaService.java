@@ -37,7 +37,7 @@ public class TransferenciaService {
 	private TransferenciaRepository transferenciaRepository;
 		
 	@Transactional
-	public void transferencia(TransferenciaRequest transferenciaRequest) {
+	public void realizarTransferencia(TransferenciaRequest transferenciaRequest) {
 		User pagador = securityService.getCurrentUser();
 		User recebedor = findUserById(transferenciaRequest.recebedor());
 		BigDecimal valor = transferenciaRequest.valor();
@@ -55,7 +55,7 @@ public class TransferenciaService {
 		try {
 			authorizationClient.autorizarTransferencia();
 			
-			realizarTransferencia(pagador, recebedor, valor);
+			editarCarteiras(pagador, recebedor, valor);
 			
 			transferencia.setStatus(StatusDaTransferencia.REALIZADA);
 			
@@ -67,12 +67,14 @@ public class TransferenciaService {
 		
 	}
 	
-	private void realizarTransferencia(User pagador, User recebedor, BigDecimal valor) {
+	private void editarCarteiras(User pagador, User recebedor, BigDecimal valor) {
 		Carteira carteiraPagador = pagador.getCarteira();
 		Carteira carteiraRecebedor = recebedor.getCarteira();
 		
-		carteiraPagador.setBalanco(carteiraPagador.getBalanco().subtract(valor));
-		carteiraRecebedor.setBalanco(carteiraRecebedor.getBalanco().add(valor));
+		carteiraPagador.setBalanco(carteiraPagador.getBalanco()
+				.subtract(valor));
+		carteiraRecebedor.setBalanco(carteiraRecebedor.getBalanco()
+				.add(valor));
 		
 		userRepository.saveAll(List.of(pagador, recebedor));
 	}

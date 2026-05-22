@@ -103,7 +103,7 @@ public class TransferenciaServiceIntegrationTest {
 		when(securityService.getCurrentUser()).thenReturn(comprador);
 		doNothing().when(authorizationClient).autorizarTransferencia();
 
-		transferenciaService.transferencia(request);
+		transferenciaService.realizarTransferencia(request);
 		
 		carteiraComprador = comprador.getCarteira();
 		carteiraLojista = lojista.getCarteira();
@@ -119,7 +119,7 @@ public class TransferenciaServiceIntegrationTest {
 	public void transferir_WhenUserIsLojista() {
 		when(securityService.getCurrentUser()).thenReturn(lojista);
 
-		assertThrows(NotAuthorizedException.class, () -> transferenciaService.transferencia(request));
+		assertThrows(NotAuthorizedException.class, () -> transferenciaService.realizarTransferencia(request));
 		
 		carteiraComprador = comprador.getCarteira();
 		carteiraLojista = lojista.getCarteira();
@@ -135,7 +135,7 @@ public class TransferenciaServiceIntegrationTest {
 		when(securityService.getCurrentUser()).thenReturn(comprador);
 		request = new TransferenciaRequest(BigDecimal.valueOf(200), lojista.getId());
 
-		assertThrows(ConflictException.class, () -> transferenciaService.transferencia(request));
+		assertThrows(ConflictException.class, () -> transferenciaService.realizarTransferencia(request));
 		
 		carteiraComprador = comprador.getCarteira();
 		carteiraLojista = lojista.getCarteira();
@@ -151,7 +151,7 @@ public class TransferenciaServiceIntegrationTest {
 		when(securityService.getCurrentUser()).thenReturn(comprador);
 		doThrow(NotAuthorizedException.class).when(authorizationClient).autorizarTransferencia();
 
-		transferenciaService.transferencia(request);
+		transferenciaService.realizarTransferencia(request);
 		
 		carteiraComprador = comprador.getCarteira();
 		carteiraLojista = lojista.getCarteira();
