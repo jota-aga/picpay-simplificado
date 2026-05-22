@@ -1,10 +1,15 @@
 package com.jh.picpay_simplificado.integration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,8 +22,10 @@ import com.jh.picpay_simplificado.client.AuthorizationClient;
 import com.jh.picpay_simplificado.dto.transferencia.TransferenciaRequest;
 import com.jh.picpay_simplificado.entity.Carteira;
 import com.jh.picpay_simplificado.entity.Role;
+import com.jh.picpay_simplificado.entity.Transferencia;
 import com.jh.picpay_simplificado.entity.User;
-import com.jh.picpay_simplificado.repository.CarteiraRepository;
+import com.jh.picpay_simplificado.exceptions.ConflictException;
+import com.jh.picpay_simplificado.exceptions.NotAuthorizedException;
 import com.jh.picpay_simplificado.repository.RoleRepository;
 import com.jh.picpay_simplificado.repository.TransferenciaRepository;
 import com.jh.picpay_simplificado.repository.UserRepository;
@@ -36,9 +43,6 @@ public class TransferenciaServiceIntegrationTest {
 	
 	@Autowired
 	private UserRepository userRepository;
-	
-	@Autowired
-	private CarteiraRepository carteiraRepository;
 	
 	@Autowired
 	private RoleRepository roleRepository;
@@ -104,7 +108,57 @@ public class TransferenciaServiceIntegrationTest {
 		carteiraComprador = comprador.getCarteira();
 		carteiraLojista = lojista.getCarteira();
 		
+		List<Transferencia> transferencias = transferenciaRepository.findAll();
+		
 		assertEquals(BigDecimal.ZERO, carteiraComprador.getBalanco());
 		assertEquals(BigDecimal.valueOf(100), carteiraLojista.getBalanco());
+		assertFalse(transferencias.isEmpty());
+	}
+	
+	@Test
+	public void transferir_WhenUserIsLojista() {
+		when(securityService.getCurrentUser()).thenReturn(lojista);
+
+		assertThrows(NotAuthorizedException.class, () -> transferenciaService.transferencia(request));
+		
+		carteiraComprador = comprador.getCarteira();
+		carteiraLojista = lojista.getCarteira();
+		List<Transferencia> transferencias = transferenciaRepository.findAll();
+		
+		assertEquals(BigDecimal.valueOf(100), carteiraComprador.getBalanco());
+		assertEquals(BigDecimal.ZERO, carteiraLojista.getBalanco());
+		assertTrue(transferencias.isEmpty());
+	}
+	
+	@Test
+	public void transferir_WhenBalancoIsNotEnough() {
+		when(securityService.getCurrentUser()).thenReturn(comprador);
+		request = new TransferenciaRequest(BigDecimal.valueOf(200), lojista.getId());
+
+		assertThrows(ConflictException.class, () -> transferenciaService.transferencia(request));
+		
+		carteiraComprador = comprador.getCarteira();
+		carteiraLojista = lojista.getCarteira();
+		List<Transferencia> transferencias = transferenciaRepository.findAll();
+		
+		assertEquals(BigDecimal.valueOf(100), carteiraComprador.getBalanco());
+		assertEquals(BigDecimal.ZERO, carteiraLojista.getBalanco());
+		assertTrue(transferencias.isEmpty());
+	}
+	
+	@Test
+	public void transferir_WhenNotAuthorizedByServicoExterno() {
+		when(securityService.getCurrentUser()).thenReturn(comprador);
+		doThrow(NotAuthorizedException.class).when(authorizationClient).autorizarTransferencia();
+
+		transferenciaService.transferencia(request);
+		
+		carteiraComprador = comprador.getCarteira();
+		carteiraLojista = lojista.getCarteira();
+		List<Transferencia> transferencias = transferenciaRepository.findAll();
+		
+		assertEquals(BigDecimal.valueOf(100), carteiraComprador.getBalanco());
+		assertEquals(BigDecimal.ZERO, carteiraLojista.getBalanco());
+		assertFalse(transferencias.isEmpty());
 	}
 }
