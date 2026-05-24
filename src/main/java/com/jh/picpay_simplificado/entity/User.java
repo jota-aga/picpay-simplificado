@@ -37,6 +37,6 @@ public class User {
 	@ManyToOne
 	private Role role;
 	
-	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@OneToOne(mappedBy="user" ,fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private Carteira carteira;
 }

@@ -19,7 +19,9 @@ public class TokenService {
 	
 	
 	public String generateToken(User user) {
-		var scope = user.getRole();
+		var scope = user.getRole()
+				.getNome();
+		
 		var claims = JwtClaimsSet.builder()
 				 .issuer("mybackend")
 				 .subject(user.getId().toString())
@@ -27,7 +29,7 @@ public class TokenService {
 				 .expiresAt(this.tokenExpiration())
 				 .claim("scope", scope)
 				 .build();
-		
+				
 		var jwtValue = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
 		
 		return jwtValue;

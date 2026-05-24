@@ -19,7 +19,7 @@ public class SecurityService {
 		Authentication authentication = SecurityContextHolder.getContext()
 			.getAuthentication();
 		
-		Long userId = (Long) authentication.getPrincipal();
+		Long userId = Long.valueOf(authentication.getName());
 		
 		return userRepository.findById(userId)
 				.orElseThrow(() -> new NotFoundException("usuário por id do token"));
