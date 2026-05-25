@@ -3,8 +3,6 @@ package com.jh.picpay_simplificado.entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import com.jh.picpay_simplificado.enums.StatusDaTransferencia;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -34,7 +32,5 @@ public class Transferencia {
 	
 	private BigDecimal valor;
 	
-	private LocalDateTime createdAt;
-	
-	private StatusDaTransferencia status ;
+	private LocalDateTime createdAt;	
 }

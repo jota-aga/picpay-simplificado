@@ -13,7 +13,6 @@ import com.jh.picpay_simplificado.entity.Carteira;
 import com.jh.picpay_simplificado.entity.Role;
 import com.jh.picpay_simplificado.entity.Transferencia;
 import com.jh.picpay_simplificado.entity.User;
-import com.jh.picpay_simplificado.enums.StatusDaTransferencia;
 import com.jh.picpay_simplificado.exceptions.ConflictException;
 import com.jh.picpay_simplificado.exceptions.NotAuthorizedException;
 import com.jh.picpay_simplificado.exceptions.NotFoundException;
@@ -26,16 +25,16 @@ import jakarta.transaction.Transactional;
 public class TransferenciaService {
 	@Autowired
 	private SecurityService securityService;
-	
+
 	@Autowired
 	private AuthorizationClient authorizationClient;
-	
+
 	@Autowired
 	private UserRepository userRepository;
-	
+
 	@Autowired
 	private TransferenciaRepository transferenciaRepository;
-		
+
 	@Transactional
 	public void realizarTransferencia(TransferenciaRequest transferenciaRequest) {
 		User pagador = securityService.getCurrentUser();
@@ -44,7 +43,7 @@ public class TransferenciaService {
 		Transferencia transferencia;
 
 		validarTransferencia(pagador, transferenciaRequest.valor());
-		
+
 		transferencia = Transferencia.builder()
 				.pagador(pagador)
 				.recebedor(recebedor)
@@ -52,48 +51,36 @@ public class TransferenciaService {
 				.createdAt(LocalDateTime.now())
 				.build();
 		
-		try {
-			authorizationClient.autorizarTransferencia();
-			
+		if(authorizationClient.autorizarTransferencia()) {
 			editarCarteiras(pagador, recebedor, valor);
 			
-			transferencia.setStatus(StatusDaTransferencia.REALIZADA);
-			
-		}catch (NotAuthorizedException e) {
-			transferencia.setStatus(StatusDaTransferencia.NAO_AUTORIZADA);
+			transferenciaRepository.save(transferencia);
 		}
-			
-		transferenciaRepository.save(transferencia);			
-		
 	}
-	
+
 	private void editarCarteiras(User pagador, User recebedor, BigDecimal valor) {
 		Carteira carteiraPagador = pagador.getCarteira();
 		Carteira carteiraRecebedor = recebedor.getCarteira();
-		
-		carteiraPagador.setBalanco(carteiraPagador.getBalanco()
-				.subtract(valor));
-		carteiraRecebedor.setBalanco(carteiraRecebedor.getBalanco()
-				.add(valor));
-		
+
+		carteiraPagador.setBalanco(carteiraPagador.getBalanco().subtract(valor));
+		carteiraRecebedor.setBalanco(carteiraRecebedor.getBalanco().add(valor));
+
 		userRepository.saveAll(List.of(pagador, recebedor));
 	}
 
 	private void validarTransferencia(User pagador, BigDecimal valorTransferencia) {
-		if(pagador.getRole().getNome().equals(Role.Value.COMPRADOR.name())) {
+		if (pagador.getRole().getNome().equals(Role.Value.COMPRADOR.name())) {
 			Carteira carteira = pagador.getCarteira();
-			
-			if(carteira.getBalanco().compareTo(valorTransferencia) == -1) 
+
+			if (carteira.getBalanco().compareTo(valorTransferencia) == -1)
 				throw new ConflictException("Balanço não suficiente para realizar a transaferñecia");
-			
-		}
-		else if(pagador.getRole().getNome().equals(Role.Value.LOJISTA.name())) {
+
+		} else if (pagador.getRole().getNome().equals(Role.Value.LOJISTA.name())) {
 			throw new NotAuthorizedException("Apenas Compradores podem realizar transferência");
 		}
 	}
-	
+
 	private User findUserById(Long id) {
-		return userRepository.findById(id)
-				.orElseThrow(() -> new NotFoundException("usuário por id"));
+		return userRepository.findById(id).orElseThrow(() -> new NotFoundException("usuário por id"));
 	}
 }
