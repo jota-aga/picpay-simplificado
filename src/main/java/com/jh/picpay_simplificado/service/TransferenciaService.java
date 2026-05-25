@@ -11,9 +11,9 @@ import com.jh.picpay_simplificado.client.AuthorizationClient;
 import com.jh.picpay_simplificado.client.NotificationService;
 import com.jh.picpay_simplificado.dto.transferencia.TransferenciaRequest;
 import com.jh.picpay_simplificado.entity.Carteira;
-import com.jh.picpay_simplificado.entity.Role;
 import com.jh.picpay_simplificado.entity.Transferencia;
 import com.jh.picpay_simplificado.entity.User;
+import com.jh.picpay_simplificado.enums.Roles;
 import com.jh.picpay_simplificado.exceptions.ConflictException;
 import com.jh.picpay_simplificado.exceptions.NotAuthorizedException;
 import com.jh.picpay_simplificado.exceptions.NotFoundException;
@@ -75,13 +75,13 @@ public class TransferenciaService {
 	}
 
 	private void validarTransferencia(User pagador, BigDecimal valorTransferencia) {
-		if (pagador.getRole().getNome().equals(Role.Value.COMPRADOR.name())) {
+		if (pagador.getRole().getNome().equals(Roles.COMPRADOR.name())) {
 			Carteira carteira = pagador.getCarteira();
 
 			if (carteira.getBalanco().compareTo(valorTransferencia) == -1)
 				throw new ConflictException("Balanço não suficiente para realizar a transaferñecia");
 
-		} else if (pagador.getRole().getNome().equals(Role.Value.LOJISTA.name())) {
+		} else if (pagador.getRole().getNome().equals(Roles.LOJISTA.name())) {
 			throw new NotAuthorizedException("Apenas Compradores podem realizar transferência");
 		}
 	}

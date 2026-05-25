@@ -26,6 +26,7 @@ import com.jh.picpay_simplificado.dto.transferencia.TransferenciaRequest;
 import com.jh.picpay_simplificado.entity.Carteira;
 import com.jh.picpay_simplificado.entity.Role;
 import com.jh.picpay_simplificado.entity.User;
+import com.jh.picpay_simplificado.enums.Roles;
 import com.jh.picpay_simplificado.exceptions.ConflictException;
 import com.jh.picpay_simplificado.exceptions.NotAuthorizedException;
 import com.jh.picpay_simplificado.repository.TransferenciaRepository;
@@ -63,8 +64,8 @@ public class TransferenciaServiceUnitTest {
 	
 	@BeforeEach
 	public void setUp() {
-		Role roleComprador = new Role(1L, Role.Value.COMPRADOR.name());
-		Role roleLojista = new Role(2L, Role.Value.LOJISTA.name());
+		Role roleComprador = new Role(1L, Roles.COMPRADOR.name());
+		Role roleLojista = new Role(2L, Roles.LOJISTA.name());
 		
 		carteiraComprador = Carteira.builder()
 				.balanco(BigDecimal.valueOf(100))

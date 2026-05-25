@@ -14,8 +14,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import com.jh.picpay_simplificado.dto.auth.LoginRequest;
 import com.jh.picpay_simplificado.dto.auth.UserRequest;
 import com.jh.picpay_simplificado.entity.Carteira;
-import com.jh.picpay_simplificado.entity.Role;
 import com.jh.picpay_simplificado.entity.User;
+import com.jh.picpay_simplificado.enums.Roles;
 import com.jh.picpay_simplificado.exceptions.ConflictException;
 import com.jh.picpay_simplificado.exceptions.NotAuthorizedException;
 import com.jh.picpay_simplificado.exceptions.NotFoundException;
@@ -42,9 +42,9 @@ public class AuthServiceIntegrationTest {
 	@BeforeEach
 	public void setUp() {
 		userComprador = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
-				Role.Value.COMPRADOR.name());
+				Roles.COMPRADOR.name());
 		userLojista = new UserRequest("João Henrique", "11237419484", "62420095000150", "joao@email.com", "senha123",
-				Role.Value.LOJISTA.name());
+				Roles.LOJISTA.name());
 		userRepository.deleteAll();
 	}
 	
@@ -63,7 +63,7 @@ public class AuthServiceIntegrationTest {
 	@Test
 	public void createUserComprador_WhenCPFIsRepeated() {
 		UserRequest userCPFRepetido = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao123@email.com", "senha123",
-				Role.Value.COMPRADOR.name());
+				Roles.COMPRADOR.name());
 		
 		authService.createUser(userComprador);
 		assertThrows(ConflictException.class, ()->authService.createUser(userCPFRepetido));
@@ -107,7 +107,7 @@ public class AuthServiceIntegrationTest {
 	@Test
 	public void createUserLojista_WhenCNPJIsRepeated() {
 		UserRequest userCNPJRepetido = new UserRequest("João Henrique", "12345678978", userLojista.cnpj(), "joao123@email.com", "senha123",
-				Role.Value.LOJISTA.name());
+				Roles.LOJISTA.name());
 		authService.createUser(userLojista);
 		
 		assertThrows(ConflictException.class, () -> authService.createUser(userCNPJRepetido));

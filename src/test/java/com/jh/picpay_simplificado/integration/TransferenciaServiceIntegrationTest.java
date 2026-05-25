@@ -24,6 +24,7 @@ import com.jh.picpay_simplificado.entity.Carteira;
 import com.jh.picpay_simplificado.entity.Role;
 import com.jh.picpay_simplificado.entity.Transferencia;
 import com.jh.picpay_simplificado.entity.User;
+import com.jh.picpay_simplificado.enums.Roles;
 import com.jh.picpay_simplificado.exceptions.ConflictException;
 import com.jh.picpay_simplificado.exceptions.NotAuthorizedException;
 import com.jh.picpay_simplificado.repository.RoleRepository;
@@ -73,8 +74,8 @@ public class TransferenciaServiceIntegrationTest {
 				.balanco(BigDecimal.ZERO)
 				.build();
 		
-		Role roleComprador = roleRepository.findByNome(Role.Value.COMPRADOR.name()).get();
-		Role roleLojista = roleRepository.findByNome(Role.Value.LOJISTA.name()).get();
+		Role roleComprador = roleRepository.findByNome(Roles.COMPRADOR.name()).get();
+		Role roleLojista = roleRepository.findByNome(Roles.LOJISTA.name()).get();
 		
 		comprador = User.builder()
 				.nome("comprador")

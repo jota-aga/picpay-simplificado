@@ -23,6 +23,7 @@ import com.jh.picpay_simplificado.dto.auth.LoginRequest;
 import com.jh.picpay_simplificado.dto.auth.UserRequest;
 import com.jh.picpay_simplificado.entity.Role;
 import com.jh.picpay_simplificado.entity.User;
+import com.jh.picpay_simplificado.enums.Roles;
 import com.jh.picpay_simplificado.exceptions.ConflictException;
 import com.jh.picpay_simplificado.exceptions.NotAuthorizedException;
 import com.jh.picpay_simplificado.exceptions.NotFoundException;
@@ -98,8 +99,8 @@ public class AuthServiceUnitTest {
 	@Test
 	public void createUserCompradorSucess() {
 		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
-				Role.Value.COMPRADOR.name());
-		role.setNome(Role.Value.COMPRADOR.name());
+				Roles.COMPRADOR.name());
+		role.setNome(Roles.COMPRADOR.name());
 		
 		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.empty());
 		when(passwordEncoder.encode(userRequest.senha())).thenReturn("senha");
@@ -114,8 +115,8 @@ public class AuthServiceUnitTest {
 	@Test
 	public void createUserComprador_WhenRoleNotFound() {
 		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
-				Role.Value.COMPRADOR.name());
-		role.setNome(Role.Value.COMPRADOR.name());
+				Roles.COMPRADOR.name());
+		role.setNome(Roles.COMPRADOR.name());
 		
 		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.empty());
 
@@ -130,8 +131,8 @@ public class AuthServiceUnitTest {
 	@Test
 	public void createUserComprador_WhenEmailIsRepeated() {
 		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
-				Role.Value.COMPRADOR.name());
-		role.setNome(Role.Value.COMPRADOR.name());
+				Roles.COMPRADOR.name());
+		role.setNome(Roles.COMPRADOR.name());
 		
 		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.of(new User()));
 		
@@ -143,8 +144,8 @@ public class AuthServiceUnitTest {
 	@Test
 	public void createUserLojistaSucess() {
 		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
-				Role.Value.LOJISTA.name());
-		role.setNome(Role.Value.LOJISTA.name());
+				Roles.LOJISTA.name());
+		role.setNome(Roles.LOJISTA.name());
 		
 		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.empty());
 		when(passwordEncoder.encode(userRequest.senha())).thenReturn("senha");
@@ -159,8 +160,8 @@ public class AuthServiceUnitTest {
 	@Test
 	public void createUserLojista_WhenRoleNotFound() {
 		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
-				Role.Value.LOJISTA.name());
-		role.setNome(Role.Value.LOJISTA.name());
+				Roles.LOJISTA.name());
+		role.setNome(Roles.LOJISTA.name());
 		
 		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.empty());
 		when(passwordEncoder.encode(userRequest.senha())).thenReturn("senha");
@@ -174,8 +175,8 @@ public class AuthServiceUnitTest {
 	@Test
 	public void createUserLojista_WhenEmailIsRepeated() {
 		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
-				Role.Value.LOJISTA.name());
-		role.setNome(Role.Value.LOJISTA.name());
+				Roles.LOJISTA.name());
+		role.setNome(Roles.LOJISTA.name());
 		
 		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.of(new User()));
 		
@@ -187,8 +188,8 @@ public class AuthServiceUnitTest {
 	@Test
 	public void createUserLojista_WhenCNPJIsRepeated() {
 		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
-				Role.Value.LOJISTA.name());
-		role.setNome(Role.Value.LOJISTA.name());
+				Roles.LOJISTA.name());
+		role.setNome(Roles.LOJISTA.name());
 		
 		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.empty());
 		when(userRepository.findByDocumento(userRequest.cnpj())).thenReturn(Optional.of(new User()));

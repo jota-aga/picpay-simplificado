@@ -21,9 +21,4 @@ public class Role {
 	private Long id;
 	
 	private String nome;
-	
-	public enum Value{
-		COMPRADOR,
-		LOJISTA;
-	}
 }
