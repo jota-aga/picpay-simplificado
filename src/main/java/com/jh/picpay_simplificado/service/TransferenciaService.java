@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.jh.picpay_simplificado.client.AuthorizationClient;
+import com.jh.picpay_simplificado.client.NotificationService;
 import com.jh.picpay_simplificado.dto.transferencia.TransferenciaRequest;
 import com.jh.picpay_simplificado.entity.Carteira;
 import com.jh.picpay_simplificado.entity.Role;
@@ -28,6 +29,9 @@ public class TransferenciaService {
 
 	@Autowired
 	private AuthorizationClient authorizationClient;
+	
+	@Autowired
+	private NotificationService notificationService;
 
 	@Autowired
 	private UserRepository userRepository;
@@ -55,6 +59,8 @@ public class TransferenciaService {
 			editarCarteiras(pagador, recebedor, valor);
 			
 			transferenciaRepository.save(transferencia);
+			
+			notificationService.notificar();
 		}
 	}
 
