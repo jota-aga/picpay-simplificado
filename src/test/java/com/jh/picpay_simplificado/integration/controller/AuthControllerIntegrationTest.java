@@ -1,6 +1,8 @@
 package com.jh.picpay_simplificado.integration.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.List;
 
@@ -12,10 +14,13 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jh.picpay_simplificado.dto.auth.LoginRequest;
+import com.jh.picpay_simplificado.dto.auth.LoginResponse;
 import com.jh.picpay_simplificado.dto.auth.UserRequest;
 import com.jh.picpay_simplificado.entity.Carteira;
 import com.jh.picpay_simplificado.entity.User;
@@ -172,5 +177,54 @@ public class AuthControllerIntegrationTest {
 		
 		assertEquals(1, users.size());
 		assertEquals(1, carteiras.size());
+	}
+	
+	@Test
+	public void doLogin_WhenDataIsCorrect_shouldReturnToken() throws JacksonException, Exception {
+		LoginRequest login = new LoginRequest(requestComprador.email(), requestComprador.senha());
+		
+		mockMvc.perform(MockMvcRequestBuilders.post(url+"/register")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(requestComprador)))
+		.andExpect(MockMvcResultMatchers.status().isCreated());
+		
+		MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(url+"/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(login)))
+		.andExpect(MockMvcResultMatchers.status().isAccepted())
+		.andReturn();
+		
+		String response = result.getResponse().getContentAsString();
+		
+		LoginResponse loginResponse = objectMapper.readValue(response, LoginResponse.class);
+		
+		assertNotNull(loginResponse.token());
+		assertFalse(loginResponse.token().isBlank());
+	}
+	
+	@Test
+	public void doLogin_WhenEmailIsNotFound_shouldReturn401() throws JacksonException, Exception {
+		LoginRequest login = new LoginRequest(requestComprador.email(), requestComprador.senha());
+		
+		mockMvc.perform(MockMvcRequestBuilders.post(url+"/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(login)))
+		.andExpect(MockMvcResultMatchers.status().isUnauthorized());
+		
+	}
+	
+	@Test
+	public void doLogin_WhenPasswordIsIncorrect_shouldReturn401() throws JacksonException, Exception {
+		LoginRequest login = new LoginRequest(requestComprador.email(), "senhaAleatoria");
+		
+		mockMvc.perform(MockMvcRequestBuilders.post(url+"/register")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(requestComprador)))
+		.andExpect(MockMvcResultMatchers.status().isCreated());
+		
+		mockMvc.perform(MockMvcRequestBuilders.post(url+"/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(login)))
+		.andExpect(MockMvcResultMatchers.status().isUnauthorized());
 	}
 }
