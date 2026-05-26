@@ -1,4 +1,4 @@
-package com.jh.picpay_simplificado.integration;
+package com.jh.picpay_simplificado.integration.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
