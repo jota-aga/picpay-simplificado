@@ -38,7 +38,7 @@ import tools.jackson.databind.ObjectMapper;
 @ActiveProfiles("test")
 public class AuthControllerIntegrationTest {
 
-	private static String url = "http://localhost:8080/api/auth";
+	private static String url = "/api/auth";
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -65,7 +65,7 @@ public class AuthControllerIntegrationTest {
 	}
 
 	@Test
-	public void shouldRegisterUserComprador() throws JacksonException, Exception {
+	public void registerUserComprador_WhenDataIsCorrect_ShouldCreate() throws JacksonException, Exception {
 		register(requestComprador).andExpect(MockMvcResultMatchers.status().isCreated());
 
 		List<User> users = userRepository.findAll();
@@ -76,7 +76,7 @@ public class AuthControllerIntegrationTest {
 	}
 
 	@Test
-	public void registerUserComprador_WhenCpfIsRepeated() throws JacksonException, Exception {
+	public void registerUserComprador_WhenCpfIsRepeated_ShouldReturn409() throws JacksonException, Exception {
 
 		UserRequest requestComCPFRepetido = new UserRequest("comprador", "11237419484", null,
 				"emaildiferente@email.com", "senhaComprador", Roles.COMPRADOR.name());
@@ -93,7 +93,7 @@ public class AuthControllerIntegrationTest {
 	}
 
 	@Test
-	public void registerUserComprador_WhenEmailIsRepeated() throws JacksonException, Exception {
+	public void registerUserComprador_WhenEmailIsRepeated_ShouldReturn409() throws JacksonException, Exception {
 
 		register(requestComprador).andExpect(MockMvcResultMatchers.status().isCreated());
 
@@ -109,7 +109,7 @@ public class AuthControllerIntegrationTest {
 	}
 
 	@Test
-	public void shouldRegisterUserLojista() throws JacksonException, Exception {
+	public void registerUserLojista_WhenDataIsCorrect_ShouldCreate() throws JacksonException, Exception {
 		register(requestLojista).andExpect(MockMvcResultMatchers.status().isCreated());
 
 		List<User> users = userRepository.findAll();
@@ -120,7 +120,7 @@ public class AuthControllerIntegrationTest {
 	}
 
 	@Test
-	public void registerUserLojista_WhenCnpjIsRepeated() throws JacksonException, Exception {
+	public void registerUserLojista_WhenCnpjIsRepeated_ShouldReturn409() throws JacksonException, Exception {
 		UserRequest cnpjRepetido = new UserRequest("lojista", null, "17871266000102", "emailDiferente@email.com",
 				"senhaLojista", Roles.LOJISTA.name());
 
@@ -136,7 +136,7 @@ public class AuthControllerIntegrationTest {
 	}
 
 	@Test
-	public void registerUserLojista_WhenEmailIsRepeated() throws JacksonException, Exception {
+	public void registerUserLojista_WhenEmailIsRepeated_ShouldReturn409() throws JacksonException, Exception {
 
 		register(requestLojista).andExpect(MockMvcResultMatchers.status().isCreated());
 
@@ -150,7 +150,7 @@ public class AuthControllerIntegrationTest {
 	}
 
 	@Test
-	public void doLogin_WhenDataIsCorrect_shouldReturnToken() throws JacksonException, Exception {
+	public void doLogin_WhenDataIsCorrect_ShouldReturnToken() throws JacksonException, Exception {
 		LoginRequest login = new LoginRequest(requestComprador.email(), requestComprador.senha());
 
 		register(requestComprador).andExpect(MockMvcResultMatchers.status().isCreated());
@@ -166,7 +166,7 @@ public class AuthControllerIntegrationTest {
 	}
 
 	@Test
-	public void doLogin_WhenEmailIsNotFound_shouldReturn401() throws JacksonException, Exception {
+	public void doLogin_WhenEmailIsNotFound_ShouldReturn401() throws JacksonException, Exception {
 		LoginRequest login = new LoginRequest(requestComprador.email(), requestComprador.senha());
 
 		login(login).andExpect(MockMvcResultMatchers.status().isUnauthorized());
@@ -174,7 +174,7 @@ public class AuthControllerIntegrationTest {
 	}
 
 	@Test
-	public void doLogin_WhenPasswordIsIncorrect_shouldReturn401() throws JacksonException, Exception {
+	public void doLogin_WhenPasswordIsIncorrect_ShouldReturn401() throws JacksonException, Exception {
 		LoginRequest login = new LoginRequest(requestComprador.email(), "senhaAleatoria");
 
 		register(requestComprador).andExpect(MockMvcResultMatchers.status().isCreated());
