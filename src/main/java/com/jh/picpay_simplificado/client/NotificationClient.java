@@ -7,10 +7,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
-public class NotificationService {
+public class NotificationClient {
 	
 	private static final Logger logger =
-            LoggerFactory.getLogger(NotificationService.class);
+            LoggerFactory.getLogger(NotificationClient.class);
 	
 	@Autowired
 	private WebClient webClient;

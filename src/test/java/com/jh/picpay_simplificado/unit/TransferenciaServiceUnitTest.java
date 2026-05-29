@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atMostOnce;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -22,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import com.jh.picpay_simplificado.client.AuthorizationClient;
+import com.jh.picpay_simplificado.client.NotificationClient;
 import com.jh.picpay_simplificado.dto.transferencia.TransferenciaRequest;
 import com.jh.picpay_simplificado.entity.Carteira;
 import com.jh.picpay_simplificado.entity.Role;
@@ -51,6 +53,9 @@ public class TransferenciaServiceUnitTest {
 	
 	@Mock
 	private AuthorizationClient authorizationClient;
+	
+	@Mock
+	private NotificationClient notificationClient;
 	
 	private User userComprador;
 	
@@ -84,19 +89,23 @@ public class TransferenciaServiceUnitTest {
 	public void realizarTransferenciaSucess() {
 		when(securityService.getCurrentUser()).thenReturn(userComprador);
 		when(userRepository.findById(userLojista.getId())).thenReturn(Optional.of(userLojista));
+		when(authorizationClient.autorizarTransferencia()).thenReturn(true);
+		doNothing().when(notificationClient).notificar();
+		
 		
 		transferenciaService.realizarTransferencia(request);
 		
 		verify(transferenciaRepository, atMostOnce()).save(any());
 		verify(userRepository, atMostOnce()).save(any());
-		assertEquals(carteiraComprador.getBalanco(), BigDecimal.ZERO);
-		assertEquals(carteiraLojista.getBalanco(), BigDecimal.valueOf(100));
+		assertEquals(BigDecimal.ZERO, carteiraComprador.getBalanco());
+		assertEquals(BigDecimal.valueOf(100), carteiraLojista.getBalanco());
 	}
 	
 	@Test
 	public void realizarTransferencia_WhenPagadorIsLojista() {
 		when(securityService.getCurrentUser()).thenReturn(userLojista);
-		when(userRepository.findById(userLojista.getId())).thenReturn(Optional.of(userLojista));
+		when(userRepository.findById(userComprador.getId())).thenReturn(Optional.of(userComprador));
+		request = new TransferenciaRequest(BigDecimal.valueOf(100), userComprador.getId());
 		
 		assertThrows(NotAuthorizedException.class, () -> transferenciaService.realizarTransferencia(request));
 		
@@ -122,9 +131,23 @@ public class TransferenciaServiceUnitTest {
 		when(userRepository.findById(userLojista.getId())).thenReturn(Optional.of(userLojista));
 		doThrow(NotAuthorizedException.class).when(authorizationClient).autorizarTransferencia();;
 		
-		transferenciaService.realizarTransferencia(request);
+		assertThrows(NotAuthorizedException.class, () -> transferenciaService.realizarTransferencia(request));
 		
-		verify(transferenciaRepository, atMostOnce()).save(any());
+		verify(transferenciaRepository, never()).save(any());
+		verify(userRepository, never()).save(any());
+	}
+	
+	@Test
+	public void realizarTransferencia_WhenPagadorAndUserIsEquals() {
+		when(securityService.getCurrentUser()).thenReturn(userComprador);
+		when(userRepository.findById(userComprador.getId())).thenReturn(Optional.of(userComprador));
+		
+		request = new TransferenciaRequest(BigDecimal.valueOf(100), userComprador.getId());
+
+		
+		assertThrows(ConflictException.class, () -> transferenciaService.realizarTransferencia(request));
+		
+		verify(transferenciaRepository, never()).save(any());
 		verify(userRepository, never()).save(any());
 	}
 }

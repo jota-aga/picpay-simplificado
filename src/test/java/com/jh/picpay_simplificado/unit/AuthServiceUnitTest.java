@@ -118,8 +118,6 @@ public class AuthServiceUnitTest {
 				Roles.COMPRADOR.name());
 		role.setNome(Roles.COMPRADOR.name());
 		
-		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.empty());
-
 		when(passwordEncoder.encode(userRequest.senha())).thenReturn("senha");
 		when(roleRepository.findByNome(userRequest.role())).thenReturn(Optional.empty());
 		
@@ -135,6 +133,7 @@ public class AuthServiceUnitTest {
 		role.setNome(Roles.COMPRADOR.name());
 		
 		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.of(new User()));
+		when(roleRepository.findByNome(userRequest.role())).thenReturn(Optional.of(role));
 		
 		assertThrows(ConflictException.class, () -> authService.createUser(userRequest));
 		
@@ -163,7 +162,6 @@ public class AuthServiceUnitTest {
 				Roles.LOJISTA.name());
 		role.setNome(Roles.LOJISTA.name());
 		
-		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.empty());
 		when(passwordEncoder.encode(userRequest.senha())).thenReturn("senha");
 		when(roleRepository.findByNome(userRequest.role())).thenReturn(Optional.empty());
 		
@@ -179,6 +177,7 @@ public class AuthServiceUnitTest {
 		role.setNome(Roles.LOJISTA.name());
 		
 		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.of(new User()));
+		when(roleRepository.findByNome(userRequest.role())).thenReturn(Optional.of(role));
 		
 		assertThrows(ConflictException.class, () -> authService.createUser(userRequest));
 		
@@ -193,7 +192,8 @@ public class AuthServiceUnitTest {
 		
 		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.empty());
 		when(userRepository.findByDocumento(userRequest.cnpj())).thenReturn(Optional.of(new User()));
-	
+		when(roleRepository.findByNome(userRequest.role())).thenReturn(Optional.of(role));
+
 		assertThrows(ConflictException.class, () -> authService.createUser(userRequest));
 		
 		verify(userRepository, never()).save(any());

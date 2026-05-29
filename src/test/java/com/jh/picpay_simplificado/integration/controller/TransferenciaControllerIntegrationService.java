@@ -119,6 +119,15 @@ public class TransferenciaControllerIntegrationService {
 		transferirPost("SCOPE_COMPRADOR", request).andExpect(MockMvcResultMatchers.status().isUnauthorized());
 	}
 	
+	@Test
+	public void realizarTransferencia_WhenBalancoIsNotEnough_ShouldReturn409() throws Exception {
+		when(securityService.getCurrentUser()).thenReturn(userComprador);
+		when(authorizationClient.autorizarTransferencia()).thenReturn(true);
+		TransferenciaRequest request = new TransferenciaRequest(BigDecimal.valueOf(101), userLojista.getId());
+		
+		transferirPost("SCOPE_COMPRADOR", request).andExpect(MockMvcResultMatchers.status().isConflict());
+	}
+	
 	private ResultActions transferirPost(String scope, TransferenciaRequest request) throws JacksonException, Exception {
 		return mockMvc.perform(MockMvcRequestBuilders.post(url)
 				.contentType(MediaType.APPLICATION_JSON)

@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.jh.picpay_simplificado.client.AuthorizationClient;
-import com.jh.picpay_simplificado.client.NotificationService;
+import com.jh.picpay_simplificado.client.NotificationClient;
 import com.jh.picpay_simplificado.dto.transferencia.TransferenciaRequest;
 import com.jh.picpay_simplificado.entity.Carteira;
 import com.jh.picpay_simplificado.entity.Transferencia;
@@ -31,7 +31,7 @@ public class TransferenciaService {
 	private AuthorizationClient authorizationClient;
 	
 	@Autowired
-	private NotificationService notificationService;
+	private NotificationClient notificationClient;
 
 	@Autowired
 	private UserRepository userRepository;
@@ -46,7 +46,7 @@ public class TransferenciaService {
 		BigDecimal valor = transferenciaRequest.valor();
 		Transferencia transferencia;
 
-		validarTransferencia(pagador, transferenciaRequest.valor());
+		validarTransferencia(pagador, recebedor, transferenciaRequest.valor());
 
 		transferencia = Transferencia.builder()
 				.pagador(pagador)
@@ -60,7 +60,7 @@ public class TransferenciaService {
 			
 			transferenciaRepository.save(transferencia);
 			
-			notificationService.notificar();
+			notificationClient.notificar();
 		}
 	}
 
@@ -74,7 +74,11 @@ public class TransferenciaService {
 		userRepository.saveAll(List.of(pagador, recebedor));
 	}
 
-	private void validarTransferencia(User pagador, BigDecimal valorTransferencia) {
+	private void validarTransferencia(User pagador, User recebedor, BigDecimal valorTransferencia) {
+		if(pagador.getId().equals(recebedor.getId())) {
+			throw new ConflictException("Não é possível realizar uma transferência para si mesmo");
+		}
+		
 		if (pagador.getRole().getNome().equals(Roles.COMPRADOR.name())) {
 			Carteira carteira = pagador.getCarteira();
 

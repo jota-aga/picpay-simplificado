@@ -10,6 +10,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.jh.picpay_simplificado.dto.auth.LoginRequest;
 import com.jh.picpay_simplificado.dto.auth.UserRequest;
@@ -23,7 +25,9 @@ import com.jh.picpay_simplificado.repository.CarteiraRepository;
 import com.jh.picpay_simplificado.repository.UserRepository;
 import com.jh.picpay_simplificado.service.AuthService;
 
+@ActiveProfiles("test")
 @SpringBootTest
+@Transactional
 public class AuthServiceIntegrationTest {
 	
 	@Autowired

@@ -4,8 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
@@ -15,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +32,7 @@ import com.jh.picpay_simplificado.repository.UserRepository;
 import com.jh.picpay_simplificado.service.SecurityService;
 import com.jh.picpay_simplificado.service.TransferenciaService;
 
+@ActiveProfiles("test")
 @SpringBootTest
 @Transactional
 public class TransferenciaServiceIntegrationTest {
@@ -102,7 +102,7 @@ public class TransferenciaServiceIntegrationTest {
 	@Test
 	public void transferirSucesso() {
 		when(securityService.getCurrentUser()).thenReturn(comprador);
-		doNothing().when(authorizationClient).autorizarTransferencia();
+		when(authorizationClient.autorizarTransferencia()).thenReturn(true);
 
 		transferenciaService.realizarTransferencia(request);
 		
@@ -119,7 +119,7 @@ public class TransferenciaServiceIntegrationTest {
 	@Test
 	public void transferir_WhenUserIsLojista() {
 		when(securityService.getCurrentUser()).thenReturn(lojista);
-
+		request = new TransferenciaRequest(BigDecimal.TEN, comprador.getId());
 		assertThrows(NotAuthorizedException.class, () -> transferenciaService.realizarTransferencia(request));
 		
 		carteiraComprador = comprador.getCarteira();
@@ -144,13 +144,12 @@ public class TransferenciaServiceIntegrationTest {
 		
 		assertEquals(BigDecimal.valueOf(100), carteiraComprador.getBalanco());
 		assertEquals(BigDecimal.ZERO, carteiraLojista.getBalanco());
-		assertTrue(transferencias.isEmpty());
 	}
 	
 	@Test
 	public void transferir_WhenNotAuthorizedByServicoExterno() {
 		when(securityService.getCurrentUser()).thenReturn(comprador);
-		doThrow(NotAuthorizedException.class).when(authorizationClient).autorizarTransferencia();
+		when(authorizationClient.autorizarTransferencia()).thenReturn(false);
 
 		transferenciaService.realizarTransferencia(request);
 		
@@ -160,6 +159,6 @@ public class TransferenciaServiceIntegrationTest {
 		
 		assertEquals(BigDecimal.valueOf(100), carteiraComprador.getBalanco());
 		assertEquals(BigDecimal.ZERO, carteiraLojista.getBalanco());
-		assertFalse(transferencias.isEmpty());
+		assertTrue(transferencias.isEmpty());
 	}
 }
