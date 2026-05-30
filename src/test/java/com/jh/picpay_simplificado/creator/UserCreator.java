@@ -11,19 +11,19 @@ public class UserCreator {
 				.email("email")
 				.documento("documento")
 				.senha("password")
-				.carteira(CarteiraCreator.noIdWith100BalancoAndNoUser())
+				.carteira(carteira)
 				.role(role)
 				.build();
 	}
 	
-	public static User userWithNoId(Long id, Carteira carteira, Role role) {
+	public static User userWithId(Long id, Carteira carteira, Role role) {
 		return User.builder()
 				.id(id)
 				.nome("nome")
 				.email("email")
 				.documento("documento")
 				.senha("password")
-				.carteira(CarteiraCreator.noIdWith100BalancoAndNoUser())
+				.carteira(carteira)
 				.role(role)
 				.build();
 	}

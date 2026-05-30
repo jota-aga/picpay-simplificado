@@ -24,11 +24,13 @@ import org.mockito.quality.Strictness;
 
 import com.jh.picpay_simplificado.client.AuthorizationClient;
 import com.jh.picpay_simplificado.client.NotificationClient;
+import com.jh.picpay_simplificado.creator.CarteiraCreator;
+import com.jh.picpay_simplificado.creator.RoleCreator;
+import com.jh.picpay_simplificado.creator.UserCreator;
 import com.jh.picpay_simplificado.dto.transferencia.TransferenciaRequest;
 import com.jh.picpay_simplificado.entity.Carteira;
 import com.jh.picpay_simplificado.entity.Role;
 import com.jh.picpay_simplificado.entity.User;
-import com.jh.picpay_simplificado.enums.Roles;
 import com.jh.picpay_simplificado.exceptions.ConflictException;
 import com.jh.picpay_simplificado.exceptions.NotAuthorizedException;
 import com.jh.picpay_simplificado.repository.TransferenciaRepository;
@@ -69,18 +71,14 @@ public class TransferenciaServiceUnitTest {
 	
 	@BeforeEach
 	public void setUp() {
-		Role roleComprador = new Role(1L, Roles.COMPRADOR.name());
-		Role roleLojista = new Role(2L, Roles.LOJISTA.name());
+		Role roleComprador = RoleCreator.comprador();
+		Role roleLojista = RoleCreator.lojista();
 		
-		carteiraComprador = Carteira.builder()
-				.balanco(BigDecimal.valueOf(100))
-				.build();
-		carteiraLojista = Carteira.builder()
-				.balanco(BigDecimal.ZERO)
-				.build();
+		carteiraComprador = CarteiraCreator.carteiraWith100Balanco();
+		carteiraLojista = CarteiraCreator.carteiraWith0Balanco();
 
-		userComprador = new User(1L, "nome","documento", "email", "senha", roleComprador, carteiraComprador);
-		userLojista = new User(2L, "nome","documento", "email", "senha", roleLojista, carteiraLojista);
+		userComprador = UserCreator.userWithId(1L, carteiraComprador, roleComprador);
+		userLojista = UserCreator.userWithId(2L, carteiraLojista, roleLojista);
 		
 		request = new TransferenciaRequest(BigDecimal.valueOf(100), userLojista.getId());
 	}

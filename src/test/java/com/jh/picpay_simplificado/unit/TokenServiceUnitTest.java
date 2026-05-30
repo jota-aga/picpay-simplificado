@@ -20,6 +20,9 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 
+import com.jh.picpay_simplificado.creator.RoleCreator;
+import com.jh.picpay_simplificado.creator.UserCreator;
+import com.jh.picpay_simplificado.entity.Carteira;
 import com.jh.picpay_simplificado.entity.Role;
 import com.jh.picpay_simplificado.entity.User;
 import com.jh.picpay_simplificado.enums.Roles;
@@ -45,18 +48,9 @@ public class TokenServiceUnitTest {
 		
 	@BeforeEach
 	public void setUp() {
-		Role role = Role.builder()
-				.nome(Roles.COMPRADOR.name())
-				.build();
+		Role role = RoleCreator.comprador();
 		
-		user = User.builder()
-				.id(1L)
-				.nome("nome")
-				.email("email")
-				.senha("senha")
-				.documento("documento")
-				.role(role)
-				.build();
+		user = UserCreator.userWithId(1L, new Carteira(), role);
 		
 	}
 	
