@@ -19,8 +19,11 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import com.jh.picpay_simplificado.creator.RoleCreator;
+import com.jh.picpay_simplificado.creator.UserCreator;
 import com.jh.picpay_simplificado.dto.auth.LoginRequest;
 import com.jh.picpay_simplificado.dto.auth.UserRequest;
+import com.jh.picpay_simplificado.entity.Carteira;
 import com.jh.picpay_simplificado.entity.Role;
 import com.jh.picpay_simplificado.entity.User;
 import com.jh.picpay_simplificado.enums.Roles;
@@ -52,24 +55,31 @@ public class AuthServiceUnitTest {
 	private BCryptPasswordEncoder passwordEncoder;
 	
 	private LoginRequest loginRequest;
-	
-	private UserRequest userRequest;
-	
+		
 	private User user;
 	
-	private Role role;
+	private Role roleComprador;
+	
+	private Role roleLojista;
+	
+	private UserRequest requestForComprador;
+	
+	private UserRequest requestForLojista; 
 	
 	@BeforeEach
 	public void setUp() {
-		role = new Role(1L, "role");
+		roleComprador = RoleCreator.comprador();
+		roleLojista = RoleCreator.lojista();
+		user = UserCreator.userWithNoId(new Carteira(), roleComprador);
+		
 		loginRequest = new LoginRequest("email", "senha");
-		user = User.builder()
-				.nome("nome")
-				.email("email")
-				.documento("documento")
-				.senha("password")
-				.role(role)
-				.build();
+		
+		requestForComprador = new UserRequest("João Henrique", "11237419484", null, "joao@email.com", "senha123",
+				roleComprador.getNome());
+		
+		requestForLojista = new UserRequest("João Henrique", null, "12345678000195", "joao@email.com",
+				"senha123", roleLojista.getNome());
+		
 	}
 	
 	@Test
@@ -98,103 +108,79 @@ public class AuthServiceUnitTest {
 	
 	@Test
 	public void createUserCompradorSucess() {
-		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
-				Roles.COMPRADOR.name());
-		role.setNome(Roles.COMPRADOR.name());
+		when(userRepository.findByEmail(requestForComprador.email())).thenReturn(Optional.empty());
+		when(passwordEncoder.encode(requestForComprador.senha())).thenReturn("senha");
+		when(roleRepository.findByNome(requestForComprador.role())).thenReturn(Optional.of(roleComprador));
+		when(userRepository.findByDocumento(requestForComprador.cpf())).thenReturn(Optional.empty());
 		
-		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.empty());
-		when(passwordEncoder.encode(userRequest.senha())).thenReturn("senha");
-		when(roleRepository.findByNome(userRequest.role())).thenReturn(Optional.of(role));
-		when(userRepository.findByDocumento(userRequest.cpf())).thenReturn(Optional.empty());
-		
-		authService.createUser(userRequest);
+		authService.createUser(requestForComprador);
 		
 		verify(userRepository, atLeastOnce()).save(any());
 	}
 	
 	@Test
 	public void createUserComprador_WhenRoleNotFound() {
-		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
-				Roles.COMPRADOR.name());
-		role.setNome(Roles.COMPRADOR.name());
 		
-		when(passwordEncoder.encode(userRequest.senha())).thenReturn("senha");
-		when(roleRepository.findByNome(userRequest.role())).thenReturn(Optional.empty());
+		when(passwordEncoder.encode(requestForComprador.senha())).thenReturn("senha");
+		when(roleRepository.findByNome(requestForComprador.role())).thenReturn(Optional.empty());
 		
-		assertThrows(NotFoundException.class, () -> authService.createUser(userRequest));
+		assertThrows(NotFoundException.class, () -> authService.createUser(requestForComprador));
 		
 		verify(userRepository, never()).save(any());
 	}
 	
 	@Test
 	public void createUserComprador_WhenEmailIsRepeated() {
-		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
-				Roles.COMPRADOR.name());
-		role.setNome(Roles.COMPRADOR.name());
+		when(userRepository.findByEmail(requestForComprador.email())).thenReturn(Optional.of(new User()));
+		when(roleRepository.findByNome(requestForComprador.role())).thenReturn(Optional.of(roleComprador));
 		
-		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.of(new User()));
-		when(roleRepository.findByNome(userRequest.role())).thenReturn(Optional.of(role));
-		
-		assertThrows(ConflictException.class, () -> authService.createUser(userRequest));
+		assertThrows(ConflictException.class, () -> authService.createUser(requestForComprador));
 		
 		verify(userRepository, never()).save(any());
 	}
 	
 	@Test
 	public void createUserLojistaSucess() {
-		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
-				Roles.LOJISTA.name());
-		role.setNome(Roles.LOJISTA.name());
+		when(userRepository.findByEmail(requestForLojista.email())).thenReturn(Optional.empty());
+		when(passwordEncoder.encode(requestForLojista.senha())).thenReturn("senha");
+		when(roleRepository.findByNome(requestForLojista.role())).thenReturn(Optional.of(roleLojista));
+		when(userRepository.findByDocumento(requestForLojista.cnpj())).thenReturn(Optional.empty());
 		
-		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.empty());
-		when(passwordEncoder.encode(userRequest.senha())).thenReturn("senha");
-		when(roleRepository.findByNome(userRequest.role())).thenReturn(Optional.of(role));
-		when(userRepository.findByDocumento(userRequest.cnpj())).thenReturn(Optional.empty());
-		
-		authService.createUser(userRequest);
+		authService.createUser(requestForLojista);
 		
 		verify(userRepository, atLeastOnce()).save(any());
 	}
 	
 	@Test
 	public void createUserLojista_WhenRoleNotFound() {
-		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
-				Roles.LOJISTA.name());
-		role.setNome(Roles.LOJISTA.name());
 		
-		when(passwordEncoder.encode(userRequest.senha())).thenReturn("senha");
-		when(roleRepository.findByNome(userRequest.role())).thenReturn(Optional.empty());
+		when(passwordEncoder.encode(requestForLojista.senha())).thenReturn("senha");
+		when(roleRepository.findByNome(requestForLojista.role())).thenReturn(Optional.empty());
 		
-		assertThrows(NotFoundException.class, () -> authService.createUser(userRequest));
+		assertThrows(NotFoundException.class, () -> authService.createUser(requestForLojista));
 		
 		verify(userRepository, never()).save(any());
 	}
 	
 	@Test
 	public void createUserLojista_WhenEmailIsRepeated() {
-		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
-				Roles.LOJISTA.name());
-		role.setNome(Roles.LOJISTA.name());
 		
-		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.of(new User()));
-		when(roleRepository.findByNome(userRequest.role())).thenReturn(Optional.of(role));
+		when(userRepository.findByEmail(requestForLojista.email())).thenReturn(Optional.of(new User()));
+		when(roleRepository.findByNome(requestForLojista.role())).thenReturn(Optional.of(roleLojista));
 		
-		assertThrows(ConflictException.class, () -> authService.createUser(userRequest));
+		assertThrows(ConflictException.class, () -> authService.createUser(requestForLojista));
 		
 		verify(userRepository, never()).save(any());
 	}
 	
 	@Test
 	public void createUserLojista_WhenCNPJIsRepeated() {
-		userRequest = new UserRequest("João Henrique", "11237419484", "12345678000195", "joao@email.com", "senha123",
-				Roles.LOJISTA.name());
-		role.setNome(Roles.LOJISTA.name());
 		
-		when(userRepository.findByEmail(userRequest.email())).thenReturn(Optional.empty());
-		when(userRepository.findByDocumento(userRequest.cnpj())).thenReturn(Optional.of(new User()));
-		when(roleRepository.findByNome(userRequest.role())).thenReturn(Optional.of(role));
+		when(userRepository.findByEmail(requestForLojista.email())).thenReturn(Optional.empty());
+		when(userRepository.findByDocumento(requestForLojista.cnpj())).thenReturn(Optional.of(new User()));
+		when(roleRepository.findByNome(requestForLojista.role())).thenReturn(Optional.of(roleLojista));
 
-		assertThrows(ConflictException.class, () -> authService.createUser(userRequest));
+		assertThrows(ConflictException.class, () -> authService.createUser(requestForLojista));
 		
 		verify(userRepository, never()).save(any());
 	}
