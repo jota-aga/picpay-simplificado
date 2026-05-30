@@ -18,6 +18,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jh.picpay_simplificado.client.AuthorizationClient;
+import com.jh.picpay_simplificado.creator.CarteiraCreator;
+import com.jh.picpay_simplificado.creator.UserCreator;
 import com.jh.picpay_simplificado.dto.transferencia.TransferenciaRequest;
 import com.jh.picpay_simplificado.entity.Carteira;
 import com.jh.picpay_simplificado.entity.Role;
@@ -66,32 +68,15 @@ public class TransferenciaServiceIntegrationTest {
 	
 	@BeforeEach
 	public void setUp() {
-		carteiraComprador = Carteira.builder()
-				.balanco(BigDecimal.valueOf(100))
-				.build();
+		carteiraComprador = CarteiraCreator.carteiraWith100Balanco();
 		
-		carteiraLojista = Carteira.builder()
-				.balanco(BigDecimal.ZERO)
-				.build();
+		carteiraLojista = CarteiraCreator.carteiraWith0Balanco();
 		
 		Role roleComprador = roleRepository.findByNome(Roles.COMPRADOR.name()).get();
 		Role roleLojista = roleRepository.findByNome(Roles.LOJISTA.name()).get();
 		
-		comprador = User.builder()
-				.nome("comprador")
-				.email("email")
-				.documento("documento")
-				.role(roleComprador)
-				.carteira(carteiraComprador)
-				.build();
-		
-		lojista = User.builder()
-				.nome("comprador")
-				.email("email")
-				.documento("documento")
-				.role(roleLojista)
-				.carteira(carteiraLojista)
-				.build();
+		comprador = UserCreator.userWithNoId(carteiraComprador, roleComprador);
+		lojista = UserCreator.userWithNoId(carteiraLojista, roleLojista);
 		
 		comprador = userRepository.save(comprador);
 		lojista = userRepository.save(lojista);

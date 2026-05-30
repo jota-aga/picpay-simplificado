@@ -21,8 +21,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jh.picpay_simplificado.client.AuthorizationClient;
+import com.jh.picpay_simplificado.creator.CarteiraCreator;
+import com.jh.picpay_simplificado.creator.UserCreator;
 import com.jh.picpay_simplificado.dto.transferencia.TransferenciaRequest;
-import com.jh.picpay_simplificado.entity.Carteira;
 import com.jh.picpay_simplificado.entity.Role;
 import com.jh.picpay_simplificado.entity.User;
 import com.jh.picpay_simplificado.enums.Roles;
@@ -68,25 +69,9 @@ public class TransferenciaControllerIntegrationService {
 		Role roleComprador = roleRepository.findByNome(Roles.COMPRADOR.name()).get();
 		Role roleLojista = roleRepository.findByNome(Roles.LOJISTA.name()).get();
 
-		userComprador = User.builder()
-				.nome("comprador")
-				.documento("documento")
-				.email("emailcomprador@email.com")
-				.senha("senha")
-				.carteira(Carteira.builder()
-						.balanco(BigDecimal.valueOf(100)).build())
-				.role(roleComprador)
-				.build();
+		userComprador = UserCreator.userWithNoId(CarteiraCreator.carteiraWith100Balanco(), roleComprador);
 		
-		userLojista = User.builder()
-				.nome("lojista")
-				.documento("documento")
-				.email("emaillojista@email.com")
-				.senha("senha")
-				.carteira(Carteira.builder()
-						.balanco(BigDecimal.ZERO).build())
-				.role(roleLojista)
-				.build();
+		userLojista = UserCreator.userWithNoId(CarteiraCreator.carteiraWith0Balanco(), roleLojista);
 		
 		userComprador = userRepository.save(userComprador);
 		userLojista = userRepository.save(userLojista);
@@ -97,8 +82,8 @@ public class TransferenciaControllerIntegrationService {
 		when(securityService.getCurrentUser()).thenReturn(userComprador);
 		when(authorizationClient.autorizarTransferencia()).thenReturn(true);
 		TransferenciaRequest request = new TransferenciaRequest(BigDecimal.valueOf(50), userLojista.getId());
-		
 		transferirPost("SCOPE_COMPRADOR", request).andExpect(MockMvcResultMatchers.status().isOk());
+		
 	}
 	
 	@Test
@@ -114,7 +99,7 @@ public class TransferenciaControllerIntegrationService {
 	public void realizarTransferencia_WhenUserIsLojista_ShouldReturn401() throws Exception {
 		when(securityService.getCurrentUser()).thenReturn(userLojista);
 		when(authorizationClient.autorizarTransferencia()).thenReturn(true);
-		TransferenciaRequest request = new TransferenciaRequest(BigDecimal.valueOf(50), userLojista.getId());
+		TransferenciaRequest request = new TransferenciaRequest(BigDecimal.valueOf(50), userComprador.getId());
 		
 		transferirPost("SCOPE_COMPRADOR", request).andExpect(MockMvcResultMatchers.status().isUnauthorized());
 	}
